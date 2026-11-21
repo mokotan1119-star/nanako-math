@@ -826,13 +826,28 @@ function renderPad(which){
  dEl.classList.toggle("active",st.field==="den");
 }
 function resetPad(which){ PADS[which]={num:"",den:"",field:"den"}; renderPad(which); }
+function padAnswer(which){
+ var q=(which==="ch")?(CH.active?CH.q:null):(ADV.active?ADV.q:null);
+ if(!q) return null;
+ var g=gcd(q.n,q.d);
+ return {n:q.n/g,d:q.d/g};
+}
+function padProgress(which){
+ var ans=padAnswer(which); if(!ans) return;
+ var st=PADS[which];
+ var numOK=st.num!==""&&parseInt(st.num,10)===ans.n;
+ var denOK=st.den!==""&&parseInt(st.den,10)===ans.d;
+ if(numOK&&denOK){ el(which+"-submit").click(); return; }
+ if(st.field==="den"&&denOK){ st.field="num"; renderPad(which); }
+ else if(st.field==="num"&&numOK&&!denOK){ st.field="den"; renderPad(which); }
+}
 document.addEventListener("click",function(e){
  var k=e.target.closest("[data-key]");
  if(k){
   var which=k.getAttribute("data-pad"), key=k.getAttribute("data-key"), st=PADS[which];
   if(key==="C"){ st.num=""; st.den=""; }
   else if(key==="⌫"){ st[st.field]=st[st.field].slice(0,-1); }
-  else { if(st[st.field].length<3) st[st.field]+=key; if(st.field==="den" && st.den.length>=2) st.field="num"; }
+  else { if(st[st.field].length<3) st[st.field]+=key; padProgress(which); if(st.field==="den" && st.den.length>=2) st.field="num"; }
   renderPad(which);
   return;
  }
