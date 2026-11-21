@@ -407,6 +407,7 @@ h3.sect{font-size:18px;margin:20px 0 10px;font-weight:800;}
   <div class="statusline">
     <span class="chip" id="adv-progress"></span>
     <span class="chip combo" id="adv-combo">🔥 コンボ 0</span>
+    <span class="chip" id="adv-score">🏆 0</span>
     <span class="chip" id="adv-guard" style="display:none;">🛡 ガード 0</span>
   </div>
   <div class="timerbar" id="adv-timerwrap"><i id="adv-timer" style="width:100%"></i></div>
@@ -466,6 +467,8 @@ h3.sect{font-size:18px;margin:20px 0 10px;font-weight:800;}
   <h3 class="sect">割る数ごとの 正解率</h3>
   <table class="rectable"><thead><tr><th>割る数</th><th>問題数</th><th>一発正解</th><th>正解率</th></tr></thead><tbody id="rec-divbody"></tbody></table>
   <p class="foot-note" id="rec-weak"></p>
+  <h3 class="sect">🗺 ぼうけんの リザルト</h3>
+  <div id="rec-advresults"></div>
   <h3 class="sect">記録の 書き出し・読み込み</h3>
   <p class="foot-note" style="text-align:left;">端末を 替えるときは、記録を 書き出して コピーしておいて、新しい端末で 貼り付けて 読み込んでね。</p>
   <button class="bigbtn teal" id="rec-export">📤 記録を 書き出す</button>
@@ -615,7 +618,7 @@ function defaultData(){
   totalQ:0, totalFirst:0, totalCorrect:0,
   divisorStats:{}, challengeBest:null,
   items:{}, wishlist:[], bossDefeated:{}, bossSeen:0,
-  advRuns:0, advClears:0, noDrop:0, dropProg:0, nextRunEffects:[]
+  advRuns:0, advClears:0, noDrop:0, dropProg:0, nextRunEffects:[], advResults:[], advBest:0
  };
 }
 function loadData(){
@@ -1079,12 +1082,15 @@ var EFFECTS=[
  {id:"magnet", icon:"🧲", name:"アイテム磁石", desc:"ドロップまでの 問題数が 2問 短くなる（最短5問）。重ねて 効く。"},
  {id:"gem", icon:"💎", name:"宝石探し", desc:"ドロップの レア度が 上がりやすくなる。重ねるほど 強くなる。"},
  {id:"bigheart", icon:"💗", name:"大きなハート", desc:"ハートの 最大が +1 されて、1つ 回復する。"},
- {id:"goma", icon:"🐾", name:"ごまのお供", desc:"ボスの 必要正解数が 1問 減る（最少3問）。重ねて 効く。"}
+ {id:"goma", icon:"🐾", name:"ごまのお供", desc:"ボスの 必要正解数が 1問 減る（最少3問）。重ねて 効く。"},
+ {id:"score", icon:"🏆", name:"得点の実", desc:"スコアが 1.1倍に なる。重ねると 1.21倍、1.33倍…と 増えていく。"},
+ {id:"swift", icon:"💨", name:"はやてのブーツ", desc:"制限時間が 15秒 短くなる 代わりに、スコアが 1.3倍に なる。重ねて 効く。"},
+ {id:"gamble", icon:"🎲", name:"命がけの賭け", desc:"選んだ 瞬間に ハートが 1つ 減る 代わりに、スコアが 1.5倍に なる。"}
 ];
-var ADV={active:false,stage:1,qIdx:0,qPerStage:3,q:null,clean:true,combo:0,hearts:3,maxHearts:5,guards:0,effects:[],boss:null,bossHP:0,timer:null,timeLeft:0,isBoss:false,correctThisRun:0};
+var ADV={active:false,stage:1,qIdx:0,qPerStage:3,q:null,clean:true,combo:0,hearts:3,maxHearts:5,guards:0,effects:[],boss:null,bossHP:0,timer:null,timeLeft:0,isBoss:false,correctThisRun:0,score:0,fxMode:"start",rerolls:2,carryNames:[]};
 function stopAdvTimer(){ if(ADV.timer){ clearInterval(ADV.timer); ADV.timer=null; } }
 el("go-adventure").addEventListener("click",function(){
- ADV={active:true,stage:1,qIdx:0,qPerStage:3,q:null,clean:true,combo:0,hearts:3,maxHearts:5,guards:0,effects:[],boss:BOSSES[data.bossSeen%BOSSES.length],bossHP:5,timer:null,timeLeft:0,isBoss:false,correctThisRun:0,fxMode:"start",rerolls:2};
+ ADV={active:true,stage:1,qIdx:0,qPerStage:3,q:null,clean:true,combo:0,hearts:3,maxHearts:5,guards:0,effects:[],boss:BOSSES[data.bossSeen%BOSSES.length],bossHP:5,timer:null,timeLeft:0,isBoss:false,correctThisRun:0,fxMode:"start",rerolls:2,score:0,carryNames:[]};
  data.advRuns++;
  var carry=(data.nextRunEffects||[]).slice(); data.nextRunEffects=[]; saveData();
  ADV.carryNames=[];
@@ -1137,6 +1143,8 @@ function renderAdvStatus(){
  el("adv-hearts").textContent=h;
  el("adv-progress").textContent=ADV.isBoss?("ボス戦 "+(ADV.qIdx+1)+" / 5 問"):("ステージ "+ADV.stage+" ・ "+(ADV.qIdx+1)+" / "+ADV.qPerStage+" 問");
  el("adv-combo").textContent="🔥 コンボ "+ADV.combo;
+ var sm=scoreMult();
+ el("adv-score").textContent="🏆 "+ADV.score+(sm>1.001?(" ×"+(Math.round(sm*100)/100)):"");
  var g=el("adv-guard");
  if(ADV.guards>0){ g.style.display=""; g.textContent="🛡 ガード "+ADV.guards; } else g.style.display="none";
  var fx=el("adv-effects"); var html="";
@@ -1158,6 +1166,8 @@ function renderAdvStatus(){
  } else bb.style.display="none";
  renderAdvMap();
 }
+function scoreMult(){ return Math.pow(1.1,fxCount("score"))*Math.pow(1.3,fxCount("swift"))*Math.pow(1.5,fxCount("gamble")); }
+function addScore(base){ ADV.score+=Math.round(base*scoreMult()); }
 function fxCount(id){ var n=0; for(var i=0;i<ADV.effects.length;i++) if(ADV.effects[i]===id) n++; return n; }
 function renderSensor(){
  var box=el("adv-sensor");
@@ -1180,11 +1190,12 @@ function startAdvTimer(){
  var sandN=fxCount("sand");
  if(sandN>=3||!ADV.active){ wrap.style.display="none"; return; }
  wrap.style.display="";
- ADV.timeLeft=40+20*sandN;
+ var total=Math.max(12,40+20*sandN-15*fxCount("swift"));
+ ADV.timeLeft=total;
  el("adv-timer").style.width="100%"; el("adv-timer").className="";
  ADV.timer=setInterval(function(){
   ADV.timeLeft-=0.1;
-  var pct=Math.max(0,ADV.timeLeft/(40+20*sandN)*100);
+  var pct=Math.max(0,ADV.timeLeft/total*100);
   var bar=el("adv-timer"); bar.style.width=pct+"%"; bar.className=ADV.timeLeft<10?"low":"";
   if(ADV.timeLeft<=0){ stopAdvTimer(); advMiss("⏰ 時間切れ！"); }
  },100);
@@ -1227,6 +1238,8 @@ el("adv-submit").addEventListener("click",function(){
   stopAdvTimer();
   recordQuestion(ADV.clean);
   if(ADV.clean){ ADV.combo++; ADV.correctThisRun++; }
+  var pts=100+(ADV.clean?50:0)+Math.min(ADV.combo,20)*10+(advLevel()===4?100:0);
+  addScore(pts);
   el("adv-feedback").textContent="⭕ 正解！ "+an+"／"+ad; el("adv-feedback").className="feedback good";
   var bonus=0;
   if(ADV.effects.indexOf("flame")>=0) bonus+=Math.min(ADV.combo,10)*0.02;
@@ -1254,6 +1267,7 @@ el("adv-submit").addEventListener("click",function(){
  }
 });
 function stageCleared(){
+ addScore(200);
  ADV.qIdx=0;
  if(DROP_QUEUE.length){
   var html='<div class="ptitle">🎁 アイテム ゲット！</div>'+dropQueueHTML()+'<button class="bigbtn" style="margin-top:14px;" onclick="closePop();proceedStage()">つぎへ</button>';
@@ -1298,7 +1312,8 @@ function renderFxChoices(){
  rb.style.opacity=ADV.rerolls<=0?".45":"";
 }
 function applyEffectState(e){
- if(e.id==="guard"){ ADV.guards=Math.min(6,ADV.guards+2); }
+ if(e.id==="gamble"){ ADV.hearts=Math.max(1,ADV.hearts-1); ADV.effects.push(e.id); }
+ else if(e.id==="guard"){ ADV.guards=Math.min(6,ADV.guards+2); }
  else if(e.id==="heart"){ ADV.hearts=Math.min(ADV.maxHearts,ADV.hearts+1); }
  else if(e.id==="bigheart"){ ADV.maxHearts++; ADV.hearts=Math.min(ADV.maxHearts,ADV.hearts+1); ADV.effects.push(e.id); }
  else { ADV.effects.push(e.id); }
@@ -1315,15 +1330,27 @@ function pickEffect(e){
  show("scr-adv");
  nextAdvQ();
 }
+function saveAdvResult(cleared){
+ var isBest=ADV.score>(data.advBest||0);
+ var rec={date:new Date().toLocaleDateString("ja-JP"),score:ADV.score,cleared:cleared,stage:ADV.stage,boss:ADV.boss?ADV.boss.name:"",correct:ADV.correctThisRun,effects:ADV.effects.slice()};
+ if(!data.advResults) data.advResults=[];
+ data.advResults.unshift(rec);
+ if(data.advResults.length>30) data.advResults.length=30;
+ if(isBest) data.advBest=ADV.score;
+ saveData();
+ return isBest;
+}
 function bossDefeated(){
  ADV.active=false; stopAdvTimer();
+ addScore(1000+ADV.hearts*200);
+ var advBestFlag=saveAdvResult(true);
  data.bossDefeated[ADV.boss.id]=(data.bossDefeated[ADV.boss.id]||0)+1;
  data.bossSeen++; data.advClears++;
  saveData();
  confetti(true);
  showPop('<div class="psvg">'+bossSVG(ADV.boss,110)+'</div>'+
   '<div class="ptitle">🎉 '+esc(ADV.boss.name)+' を 倒した！</div>'+
-  '<div class="ptext">ボスずかんに 記録されたよ。正解 '+ADV.correctThisRun+' 問の 大冒険だったね！<br>ごほうびに 特別ドロップ！<br>さらに 特殊効果を 1つ 選んで、次の冒険に 持ち越せるよ。</div>'+dropQueueHTML()+
+  '<div class="ptext">ボスずかんに 記録されたよ。正解 '+ADV.correctThisRun+' 問の 大冒険だったね！<br>🏆 スコア：<b>'+ADV.score+' 点</b>'+(advBestFlag?'<br>🎉 歴代ベスト 更新！':"")+'<br>ごほうびに 特別ドロップ！<br>さらに 特殊効果を 1つ 選んで、次の冒険に 持ち越せるよ。</div>'+dropQueueHTML()+
   '<button class="bigbtn" style="margin-top:14px;" onclick="closePop();showEffectChoice(\'carry\')">特殊効果を えらぶ</button>',true);
  setTimeout(function(){ var it=drawItem(); if(it.r<3){ var pool=ITEMS.filter(function(x){return x.r>=3;}); it=pick(pool); } grantItem(it,false); },500);
  el("kinako-adv").textContent="やったわね！ 次の冒険では 新しいボスが 待っているわよ。";
@@ -1331,8 +1358,9 @@ function bossDefeated(){
 function finishAdventure(cleared){
  if(!ADV.active&&cleared!==false) return;
  ADV.active=false; stopAdvTimer();
+ var advBestFlag2=saveAdvResult(false);
  showPop('<div class="ptitle">💔 ハートが なくなった…</div>'+
-  '<div class="ptext">ステージ '+ADV.stage+' まで 進んだよ。手に入れた アイテムは 全部 持ち帰れたから、図鑑で 見てね。</div>'+dropQueueHTML()+
+  '<div class="ptext">ステージ '+ADV.stage+' まで 進んだよ。手に入れた アイテムは 全部 持ち帰れたから、図鑑で 見てね。<br>🏆 スコア：<b>'+ADV.score+' 点</b>'+(advBestFlag2?'<br>🎉 歴代ベスト 更新！':"")+'</div>'+dropQueueHTML()+
   '<button class="bigbtn" style="margin-top:14px;" onclick="closePop();show(\'scr-yakubun\')">約分メニューへ</button>');
  el("kinako-adv").textContent="おつかれさま。アイテムは 持ち帰れたわ。また 挑戦してね。";
 }
@@ -1420,6 +1448,19 @@ function renderRecords(){
   body.appendChild(tr);
  }
  el("rec-weak").textContent=weak?("💡 苦手な 割る数は「"+weak+"」みたい。れんしゅうで "+weak+" で 割れる問題を たくさん 解いてみよう。"):"データが 集まると、苦手な 割る数が ここに 分かるよ。";
+ var advBox=el("rec-advresults");
+ if(data.advResults&&data.advResults.length){
+  var ah='<p class="foot-note" style="text-align:left;">🏆 歴代ベスト：<b>'+(data.advBest||0)+' 点</b></p>';
+  data.advResults.forEach(function(r){
+   var cnt={}; (r.effects||[]).forEach(function(id){ cnt[id]=(cnt[id]||0)+1; });
+   var icons="";
+   Object.keys(cnt).forEach(function(id){ var e=EFFECTS.filter(function(x){return x.id===id;})[0]; if(e) icons+=e.icon+(cnt[id]>1?("×"+cnt[id]):"")+" "; });
+   ah+='<div class="statcard" style="text-align:left;margin-bottom:8px;"><div style="font-weight:800;">'+esc(r.date)+' ・ 🏆 '+r.score+' 点</div><div style="font-size:13px;">'+(r.cleared?("🎉 ボス「"+esc(r.boss)+"」を 倒した！"):("ステージ "+r.stage+" まで"))+' ・ 正解 '+r.correct+' 問</div>'+(icons?('<div style="font-size:13px;">取った能力：'+icons+'</div>'):"")+'</div>';
+  });
+  advBox.innerHTML=ah;
+ } else {
+  advBox.innerHTML='<p class="foot-note" style="text-align:left;">まだ 冒険の 記録が ないよ。ぼうけんモードで 遊ぶと ここに スコアが 残るよ。</p>';
+ }
  el("kinako-records").textContent=weak?("記録を見たわ。「"+weak+"」で 割る問題が 少し 苦手みたい。そこを 練習すると ぐんと 伸びるわよ。"):"記録は 正直がいちばん。たくさん 解くと 苦手が 見えてくるわ。";
 }
 el("rec-export").addEventListener("click",function(){
