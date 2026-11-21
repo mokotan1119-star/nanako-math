@@ -784,6 +784,20 @@ function doDrop(){
 /* ================= 問題生成 ================= */
 function genFraction(level,forceIrreducible){
  var irreducible = forceIrreducible!==undefined? forceIrreducible : Math.random()<0.22;
+ if(level===4){
+  if(irreducible){
+   var hp,hq,ht=0;
+   do{ hp=randi(11,200); hq=randi(12,200); ht++; }while(gcd(hp,hq)!==1 && ht<60);
+   if(gcd(hp,hq)!==1){ hp=199; hq=200; }
+   return {n:hp,d:hq,irreducible:true};
+  }
+  var hk=pick([10,11,12,13,14,15,16,17,18,19,20,12,15,20]);
+  var lim=Math.floor(200/hk);
+  var bp,bq,bt=0;
+  do{ bp=randi(1,lim); bq=randi(2,lim); bt++; }while(gcd(bp,bq)!==1 && bt<60);
+  if(gcd(bp,bq)!==1){ bp=1; bq=2; }
+  return {n:bp*hk, d:bq*hk, irreducible:false};
+ }
  var p,q,tries=0;
  do{ p=randi(1,9); q=randi(2,12); tries++; }while(gcd(p,q)!==1 && tries<40);
  if(gcd(p,q)!==1){ p=1; q=2; }
@@ -1092,7 +1106,7 @@ function resumeAdv(){
  ADV.active=true;
  startAdvTimer();
 }
-function advLevel(){ if(ADV.isBoss) return 3; if(ADV.stage<=3) return 1; if(ADV.stage<=6) return 2; return 3; }
+function advLevel(){ if(ADV.isBoss) return 4; if(ADV.stage<=3) return 1; if(ADV.stage<=6) return 2; return 4; }
 function renderAdvMap(){
  var html="";
  for(var s=1;s<=8;s++){
@@ -1148,13 +1162,14 @@ function fxCount(id){ var n=0; for(var i=0;i<ADV.effects.length;i++) if(ADV.effe
 function renderSensor(){
  var box=el("adv-sensor");
  if(ADV.effects.indexOf("sensor")<0||!ADV.q){ box.style.display="none"; return; }
- var g=gcd(ADV.q.n,ADV.q.d), html='<div style="font-size:12px;font-weight:800;color:var(--ink-soft);">📡 センサー反応…</div><div style="display:flex;gap:5px;justify-content:center;margin-top:4px;">';
+ var g=gcd(ADV.q.n,ADV.q.d), html='<div style="font-size:12px;font-weight:800;color:var(--ink-soft);">📡 センサー反応…</div><div style="display:flex;gap:5px;justify-content:center;margin-top:4px;flex-wrap:wrap;">';
  var sensorLv=fxCount("sensor");
- for(var d=2;d<=9;d++){
+ var maxD=g>9?20:9;
+ for(var d=2;d<=maxD;d++){
   var glow;
   if(sensorLv>=2){ glow=(d===g&&g>1); }
   else { glow=g>1&&(ADV.q.n%d===0&&ADV.q.d%d===0); if(glow){ for(var dd=2;dd<d;dd++){ if(ADV.q.n%dd===0&&ADV.q.d%dd===0){ glow=false; break; } } } }
-  html+='<span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;font-weight:800;font-size:15px;border:2px solid var(--line);background:var(--card);'+(glow?"border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,183,3,.45);":"opacity:.55;")+'">'+d+"</span>";
+  html+='<span style="display:inline-flex;align-items:center;justify-content:center;width:'+(maxD>9?28:34)+'px;height:'+(maxD>9?28:34)+'px;border-radius:10px;font-weight:800;font-size:'+(maxD>9?13:15)+'px;border:2px solid var(--line);background:var(--card);'+(glow?"border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,183,3,.45);":"opacity:.55;")+'">'+d+"</span>";
  }
  box.innerHTML=html+"</div>";
  box.style.display="";
@@ -1248,7 +1263,7 @@ function stageCleared(){
 function proceedStage(){
  if(ADV.stage>=8){ startBoss(); return; }
  ADV.stage++;
- el("kinako-adv").textContent="ステージ "+ADV.stage+" へ 進むわよ。その調子！";
+ el("kinako-adv").textContent=ADV.stage===7?("ここからは ハードモード！ 分母も分子も 最大200、公約数は 最大20の 大きな問題が 出るわよ。"):("ステージ "+ADV.stage+" へ 進むわよ。その調子！");
  show("scr-adv");
  nextAdvQ();
 }
