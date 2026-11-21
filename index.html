@@ -116,6 +116,7 @@ button{font-family:inherit; cursor:pointer;}
 .afrac .abar{width:104px;border-top:5px solid var(--ink);border-radius:3px;}
 .afrac .ansfield{width:96px;min-height:58px;font-size:34px;border-radius:13px;}
 .afrac .anslabel{font-size:11px;}
+.slimbtn{display:block;margin:8px auto 2px;padding:9px 34px;font-size:16px;font-weight:800;font-family:inherit;color:#fff;background:var(--accent);border:none;border-radius:999px;box-shadow:var(--shadow);}
 .frac .barline{display:block;height:0;border-top:5px solid var(--ink);border-radius:3px;margin:3px 0;}
 html,body{touch-action:manipulation;}
 button{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
@@ -194,7 +195,8 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 .advnode.now{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,140,66,.4);font-size:17px;}
 .advnode.boss{width:42px;height:42px;font-size:19px;}
 .advline{flex:1;height:4px;background:var(--line);border-radius:2px;}
-.effectlist{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.effectlist{display:flex;flex-wrap:nowrap;gap:5px;margin-bottom:10px;overflow-x:auto;padding:2px;cursor:pointer;}
+.effectchip{flex:0 0 auto;}
 .effectchip{
   background:#e7f9f5;border:2px solid var(--teal);color:var(--teal-d);border-radius:999px;
   font-size:13px;font-weight:800;padding:5px 11px;
@@ -387,7 +389,7 @@ h3.sect{font-size:18px;margin:20px 0 10px;font-weight:800;}
     </div>
   </div>
   <div class="feedback" id="ch-feedback"></div>
-  <button class="bigbtn" id="ch-submit" style="margin:6px 0 4px;">こたえる ✓</button>
+  <button class="bigbtn" id="ch-submit" style="display:none;">こたえる ✓</button>
   <div class="keypad" data-pad="ch"></div>
   <div class="kinako"><div class="face">🌸</div><div><span class="who">きなこ</span><p id="kinako-challenge">約分した 最終形を テンキーで 入力してね。速さより 正確さが 大事よ。</p></div></div>
 </section>
@@ -396,7 +398,7 @@ h3.sect{font-size:18px;margin:20px 0 10px;font-weight:800;}
 <section class="screen" id="scr-adv">
   <div class="topbar"><button class="backbtn" id="adv-quit">←</button><h2>🗺 ぼうけん</h2><div class="spacer"></div><span class="hearts" id="adv-hearts">❤❤❤</span></div>
   <div class="advmap" id="adv-map"></div>
-  <div class="effectlist" id="adv-effects"></div>
+  <div class="effectlist" id="adv-effects" onclick="showEffectsPop()"></div>
   <div class="bossstage" id="adv-bossbox" style="display:none;">
     <div id="adv-boss-svg"></div>
     <div class="bname" id="adv-boss-name"></div>
@@ -422,7 +424,7 @@ h3.sect{font-size:18px;margin:20px 0 10px;font-weight:800;}
     <div id="adv-sensor" style="margin-top:10px;display:none;"></div>
   </div>
   <div class="feedback" id="adv-feedback"></div>
-  <button class="bigbtn" id="adv-submit" style="margin:6px 0 4px;">こたえる ✓</button>
+  <button class="slimbtn" id="adv-submit">こたえる ✓</button>
   <div class="keypad" data-pad="adv"></div>
   <div class="kinako"><div class="face">🌸</div><div><span class="who">きなこ</span><p id="kinako-adv">ごまと 一緒に 地底を 進みましょう。ミスすると ハートが 減るから 気をつけて。</p></div></div>
 </section>
@@ -838,6 +840,7 @@ function padProgress(which){
  var numOK=st.num!==""&&parseInt(st.num,10)===ans.n;
  var denOK=st.den!==""&&parseInt(st.den,10)===ans.d;
  if(numOK&&denOK){ el(which+"-submit").click(); return; }
+ if(which==="ch"&&st.num.length===String(ans.n).length&&st.den.length===String(ans.d).length){ el("ch-submit").click(); return; }
  if(st.field==="den"&&denOK){ st.field="num"; renderPad(which); }
  else if(st.field==="num"&&numOK&&!denOK){ st.field="den"; renderPad(which); }
 }
@@ -1084,6 +1087,18 @@ function renderAdvMap(){
  html+='<div class="advline"></div><div class="advnode boss'+(ADV.isBoss?" now":"")+'">👹</div>';
  el("adv-map").innerHTML=html;
 }
+function showEffectsPop(){
+ if(!ADV.effects.length) return;
+ var counts={};
+ for(var j=0;j<ADV.effects.length;j++) counts[ADV.effects[j]]=(counts[ADV.effects[j]]||0)+1;
+ var ids=Object.keys(counts), html='<div class="ptitle">✨ 選んだ 特殊効果</div><div class="ptext" style="text-align:left;">';
+ for(var i=0;i<ids.length;i++){
+  var e=EFFECTS.filter(function(x){return x.id===ids[i];})[0];
+  if(e) html+="<p style='margin:8px 0;'>"+e.icon+" <b>"+e.name+(counts[ids[i]]>1?(" ×"+counts[ids[i]]):"")+"</b><br>"+e.desc+"</p>";
+ }
+ html+='</div><button class="bigbtn" style="margin-top:10px;" onclick="closePop()">とじる</button>';
+ showPop(html);
+}
 function renderAdvStatus(){
  var h=""; for(var i=0;i<ADV.maxHearts;i++){ h+= i<ADV.hearts?"❤":"🖤"; }
  el("adv-hearts").textContent=h;
@@ -1092,11 +1107,14 @@ function renderAdvStatus(){
  var g=el("adv-guard");
  if(ADV.guards>0){ g.style.display=""; g.textContent="🛡 ガード "+ADV.guards; } else g.style.display="none";
  var fx=el("adv-effects"); var html="";
- for(var j=0;j<ADV.effects.length;j++){
-  var e=EFFECTS.filter(function(x){return x.id===ADV.effects[j];})[0];
-  if(e) html+='<span class="effectchip">'+e.icon+" "+e.name+"</span>";
+ var counts={};
+ for(var j=0;j<ADV.effects.length;j++) counts[ADV.effects[j]]=(counts[ADV.effects[j]]||0)+1;
+ var ids=Object.keys(counts);
+ for(var j2=0;j2<ids.length;j2++){
+  var e2=EFFECTS.filter(function(x){return x.id===ids[j2];})[0];
+  if(e2) html+='<span class="effectchip">'+e2.icon+(counts[ids[j2]]>1?(" ×"+counts[ids[j2]]):"")+"</span>";
  }
- fx.innerHTML=html;
+ fx.innerHTML=ids.length?('<span class="effectchip" style="background:var(--chip);">✨ 効果</span>'+html):"";
  var bb=el("adv-bossbox");
  if(ADV.isBoss){
   bb.style.display="";
