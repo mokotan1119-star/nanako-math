@@ -752,7 +752,9 @@ function grantItem(it,quiet){
 }
 function tryDrop(){
  data.dropProg=(data.dropProg||0)+1;
- if(data.dropProg>=10){
+ var need=10;
+ if(typeof ADV!=="undefined" && ADV.active) need=Math.max(5,10-2*fxCount("magnet"));
+ if(data.dropProg>=need){
   data.dropProg=0;
   doDrop();
  }
@@ -761,15 +763,20 @@ function tryDrop(){
 }
 function doDrop(){
  var it=drawItem();
- if(typeof ADV!=="undefined" && ADV.active && (ADV.effects.indexOf("lucky")>=0 || (ADV.effects.indexOf("flame")>=0 && ADV.combo>=3))){
-  if(Math.random()<0.3 && it.r<4){
+ if(typeof ADV!=="undefined" && ADV.active){
+  var up=0.25*fxCount("lucky")+0.15*fxCount("gem");
+  if(fxCount("flame")>0 && ADV.combo>=3) up+=0.15*fxCount("flame");
+  if(fxCount("star")>1) up+=0.10*(fxCount("star")-1);
+  up=Math.min(0.85,up);
+  if(up>0 && Math.random()<up && it.r<4){
    var pool=ITEMS.filter(function(x){ return x.r===it.r+1; });
    if(pool.length) it=pick(pool);
   }
  }
  grantItem(it,false);
- if(typeof ADV!=="undefined" && ADV.active && ADV.effects.indexOf("digger")>=0 && Math.random()<0.4){
-  grantItem(drawItem(),false);
+ if(typeof ADV!=="undefined" && ADV.active){
+  var dn=fxCount("digger");
+  for(var di=0;di<dn;di++){ if(Math.random()<0.4) grantItem(drawItem(),false); }
  }
 }
 
@@ -1046,14 +1053,18 @@ function finishChallenge(){
 
 /* ================= ぼうけん ================= */
 var EFFECTS=[
- {id:"flame", icon:"🔥", name:"コンボの炎", desc:"コンボが 3以上だと、ドロップの レア度が 上がりやすくなる。"},
- {id:"guard", icon:"🛡", name:"まちがいガード", desc:"ミスを 1回 無効化する ガードを +2 もらう（最大3まで）。"},
- {id:"sensor", icon:"📡", name:"公約数センサー", desc:"割れる数が 1つだけ うっすら 光る。答えそのものは 教えないよ。"},
- {id:"sand", icon:"⏳", name:"時の砂", desc:"問題の 時間制限が なくなる。ゆっくり 考えられる。"},
- {id:"digger", icon:"⛏", name:"発掘上手", desc:"アイテムが ドロップした時、40%で もう1個 引ける。"},
+ {id:"flame", icon:"🔥", name:"コンボの炎", desc:"コンボが 3以上だと、ドロップの レア度が 上がりやすくなる。重ねるほど 強くなる。"},
+ {id:"guard", icon:"🛡", name:"まちがいガード", desc:"ミスを 1回 無効化する ガードを +2 もらう（最大6まで）。"},
+ {id:"sensor", icon:"📡", name:"公約数センサー", desc:"割れる数が 1つだけ うっすら 光る。2つ 重ねると 最大公約数が 光る。答えそのものは 教えないよ。"},
+ {id:"sand", icon:"⏳", name:"時の砂", desc:"制限時間が +20秒。3つ 重ねると 時間制限が なくなる。"},
+ {id:"digger", icon:"⛏", name:"発掘上手", desc:"アイテムが ドロップした時、40%で もう1個 引ける。重ねた数だけ 抽選が 増える。"},
  {id:"heart", icon:"❤", name:"ハート回復", desc:"ハートを 1つ 回復する（最大5）。"},
- {id:"star", icon:"⭐", name:"星の加護", desc:"ミスしても コンボが 切れなくなる。"},
- {id:"lucky", icon:"🍀", name:"幸運の粉", desc:"ドロップの レア度が 少し 上がりやすくなる。"}
+ {id:"star", icon:"⭐", name:"星の加護", desc:"ミスしても コンボが 切れなくなる。重ねると レア度アップも 強くなる。"},
+ {id:"lucky", icon:"🍀", name:"幸運の粉", desc:"ドロップの レア度が 上がりやすくなる。重ねるほど 強くなる。"},
+ {id:"magnet", icon:"🧲", name:"アイテム磁石", desc:"ドロップまでの 問題数が 2問 短くなる（最短5問）。重ねて 効く。"},
+ {id:"gem", icon:"💎", name:"宝石探し", desc:"ドロップの レア度が 上がりやすくなる。重ねるほど 強くなる。"},
+ {id:"bigheart", icon:"💗", name:"大きなハート", desc:"ハートの 最大が +1 されて、1つ 回復する。"},
+ {id:"goma", icon:"🐾", name:"ごまのお供", desc:"ボスの 必要正解数が 1問 減る（最少3問）。重ねて 効く。"}
 ];
 var ADV={active:false,stage:1,qIdx:0,qPerStage:3,q:null,clean:true,combo:0,hearts:3,maxHearts:5,guards:0,effects:[],boss:null,bossHP:0,timer:null,timeLeft:0,isBoss:false,correctThisRun:0};
 function stopAdvTimer(){ if(ADV.timer){ clearInterval(ADV.timer); ADV.timer=null; } }
@@ -1125,14 +1136,16 @@ function renderAdvStatus(){
  } else bb.style.display="none";
  renderAdvMap();
 }
+function fxCount(id){ var n=0; for(var i=0;i<ADV.effects.length;i++) if(ADV.effects[i]===id) n++; return n; }
 function renderSensor(){
  var box=el("adv-sensor");
  if(ADV.effects.indexOf("sensor")<0||!ADV.q){ box.style.display="none"; return; }
  var g=gcd(ADV.q.n,ADV.q.d), html='<div style="font-size:12px;font-weight:800;color:var(--ink-soft);">📡 センサー反応…</div><div style="display:flex;gap:5px;justify-content:center;margin-top:4px;">';
+ var sensorLv=fxCount("sensor");
  for(var d=2;d<=9;d++){
-  var glow=g>1&&(ADV.q.n%d===0&&ADV.q.d%d===0);
-  var first=false;
-  if(glow){ for(var dd=2;dd<d;dd++){ if(ADV.q.n%dd===0&&ADV.q.d%dd===0){ glow=false; break; } } }
+  var glow;
+  if(sensorLv>=2){ glow=(d===g&&g>1); }
+  else { glow=g>1&&(ADV.q.n%d===0&&ADV.q.d%d===0); if(glow){ for(var dd=2;dd<d;dd++){ if(ADV.q.n%dd===0&&ADV.q.d%dd===0){ glow=false; break; } } } }
   html+='<span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;font-weight:800;font-size:15px;border:2px solid var(--line);background:var(--card);'+(glow?"border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,183,3,.45);":"opacity:.55;")+'">'+d+"</span>";
  }
  box.innerHTML=html+"</div>";
@@ -1141,13 +1154,14 @@ function renderSensor(){
 function startAdvTimer(){
  stopAdvTimer();
  var wrap=el("adv-timerwrap");
- if(ADV.effects.indexOf("sand")>=0||!ADV.active){ wrap.style.display="none"; return; }
+ var sandN=fxCount("sand");
+ if(sandN>=3||!ADV.active){ wrap.style.display="none"; return; }
  wrap.style.display="";
- ADV.timeLeft=40;
+ ADV.timeLeft=40+20*sandN;
  el("adv-timer").style.width="100%"; el("adv-timer").className="";
  ADV.timer=setInterval(function(){
   ADV.timeLeft-=0.1;
-  var pct=Math.max(0,ADV.timeLeft/40*100);
+  var pct=Math.max(0,ADV.timeLeft/(40+20*sandN)*100);
   var bar=el("adv-timer"); bar.style.width=pct+"%"; bar.className=ADV.timeLeft<10?"low":"";
   if(ADV.timeLeft<=0){ stopAdvTimer(); advMiss("⏰ 時間切れ！"); }
  },100);
@@ -1229,7 +1243,7 @@ function proceedStage(){
  showEffectChoice();
 }
 function startBoss(){
- ADV.isBoss=true; ADV.qIdx=0; ADV.bossHP=5;
+ ADV.isBoss=true; ADV.qIdx=0; ADV.bossHP=Math.max(3,5-fxCount("goma"));
  el("kinako-adv").textContent="ボス "+ADV.boss.name+" が あらわれた！ 5問 正解で 倒せるわ。ごまも 応援してる！";
  nextAdvQ();
 }
@@ -1241,15 +1255,17 @@ function showEffectChoice(){
  choices.forEach(function(e){
   var b=document.createElement("button");
   b.className="fxcard";
-  b.innerHTML='<div class="fxi">'+e.icon+'</div><div class="fxt">'+esc(e.name)+'</div><div class="fxd">'+esc(e.desc)+'</div>';
+  var nowN=(e.id==="guard")?ADV.guards:(e.id==="heart"||e.id==="bigheart")?0:fxCount(e.id);
+  b.innerHTML='<div class="fxi">'+e.icon+'</div><div class="fxt">'+esc(e.name)+(nowN?(' <span style="color:var(--accent);">×'+nowN+" → ×"+(nowN+1)+"</span>"):"")+'</div><div class="fxd">'+esc(e.desc)+'</div>';
   b.addEventListener("click",function(){ applyEffect(e); });
   grid.appendChild(b);
  });
 }
 function applyEffect(e){
- if(e.id==="guard"){ ADV.guards=Math.min(3,ADV.guards+2); }
+ if(e.id==="guard"){ ADV.guards=Math.min(6,ADV.guards+2); }
  else if(e.id==="heart"){ ADV.hearts=Math.min(ADV.maxHearts,ADV.hearts+1); }
- else { if(ADV.effects.indexOf(e.id)<0) ADV.effects.push(e.id); }
+ else if(e.id==="bigheart"){ ADV.maxHearts++; ADV.hearts=Math.min(ADV.maxHearts,ADV.hearts+1); ADV.effects.push(e.id); }
+ else { ADV.effects.push(e.id); }
  el("kinako-adv").textContent="「"+e.name+"」を 手に入れた！ 次のステージへ 進みましょう。";
  show("scr-adv");
  nextAdvQ();
