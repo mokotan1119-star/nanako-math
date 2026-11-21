@@ -1,0 +1,1361 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>算数トレーニング</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff6e3; --bg2:#ffeecb; --card:#ffffff; --ink:#4a3520; --ink-soft:#8a6d4f;
+  --accent:#ff8c42; --accent-d:#e56f1d; --teal:#2fb3a3; --teal-d:#1f8a7d;
+  --pink:#ff6b9d; --gold:#ffb703; --red:#ef476f; --line:#f0dcbb;
+  --good:#37b24d; --bad:#e8590c; --shadow:0 4px 14px rgba(160,110,40,.16);
+  --kinako-bg:#fff0f6; --chip:#fdf3e0;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#241c14; --bg2:#2e2318; --card:#372a1d; --ink:#f5e8d5; --ink-soft:#c9ab84;
+    --accent:#ffa25e; --accent-d:#ff8c42; --teal:#43cbbb; --teal-d:#2fb3a3;
+    --line:#57432c; --shadow:0 4px 14px rgba(0,0,0,.4);
+    --kinako-bg:#3d2b33; --chip:#453322;
+  }
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN",sans-serif;
+  background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);
+  color:var(--ink); min-height:100vh;
+}
+button{font-family:inherit; cursor:pointer;}
+.wrap{max-width:640px;margin:0 auto;padding:14px 14px 40px;}
+.screen{display:none;}
+.screen.on{display:block; animation:fadein .25s ease;}
+@keyframes fadein{from{opacity:0; transform:translateY(6px);}to{opacity:1; transform:none;}}
+@media (prefers-reduced-motion: reduce){ .screen.on{animation:none;} }
+
+/* header row */
+.topbar{display:flex;align-items:center;gap:10px;margin:4px 0 12px;}
+.topbar h1{font-size:26px;margin:0;font-weight:800;letter-spacing:.02em;}
+.topbar h2{font-size:22px;margin:0;font-weight:800;}
+.backbtn{
+  border:none;background:var(--card);color:var(--ink);border-radius:999px;
+  min-width:52px;min-height:52px;font-size:22px;box-shadow:var(--shadow);font-weight:800;
+}
+.spacer{flex:1;}
+
+/* kinako message */
+.kinako{
+  display:flex;gap:10px;align-items:flex-start;background:var(--kinako-bg);
+  border:2px solid var(--line);border-radius:18px;padding:10px 12px;margin:0 0 14px;
+}
+.kinako .face{
+  flex:0 0 auto;width:46px;height:46px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, #ffe3ee, #ffb7d1);
+  display:flex;align-items:center;justify-content:center;font-size:24px;
+  border:2px solid #fff;
+}
+.kinako p{margin:2px 0 0;font-size:15px;line-height:1.55;font-weight:700;}
+.kinako .who{font-size:11px;color:var(--ink-soft);font-weight:800;}
+
+/* companion card */
+.mate-card{
+  background:var(--card);border-radius:22px;box-shadow:var(--shadow);
+  padding:14px;display:flex;gap:14px;align-items:center;margin-bottom:14px;
+  border:2px solid var(--line);
+}
+.mate-card .lvbox{text-align:center;}
+.mate-card .lv{font-size:13px;font-weight:800;color:var(--ink-soft);}
+.mate-card .lvnum{font-size:30px;font-weight:800;color:var(--accent-d);line-height:1;}
+.mate-info{flex:1;min-width:0;}
+.mate-info .mname{font-size:17px;font-weight:800;}
+.mate-info .msub{font-size:13px;color:var(--ink-soft);font-weight:700;margin-top:2px;}
+.bar{height:12px;background:var(--chip);border-radius:999px;overflow:hidden;margin-top:8px;}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--accent));border-radius:999px;transition:width .4s;}
+
+/* module grid */
+.modgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+.modbtn{
+  border:2px solid var(--line);background:var(--card);border-radius:20px;box-shadow:var(--shadow);
+  padding:18px 10px 14px;text-align:center;color:var(--ink);min-height:118px;
+}
+.modbtn .mi{font-size:40px;line-height:1.1;}
+.modbtn .mt{font-size:19px;font-weight:800;margin-top:6px;}
+.modbtn .ms{font-size:12px;color:var(--ink-soft);font-weight:700;}
+.modbtn.soon{opacity:.55;}
+.modbtn:active{transform:scale(.97);}
+
+.bigbtn{
+  display:block;width:100%;border:none;border-radius:18px;min-height:62px;
+  font-size:19px;font-weight:800;color:#fff;background:var(--accent);
+  box-shadow:0 4px 0 var(--accent-d);margin:0 0 12px;padding:10px 14px;
+}
+.bigbtn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--accent-d);}
+.bigbtn.teal{background:var(--teal);box-shadow:0 4px 0 var(--teal-d);}
+.bigbtn.teal:active{box-shadow:0 1px 0 var(--teal-d);}
+.bigbtn.ghost{background:var(--card);color:var(--ink);box-shadow:var(--shadow);border:2px solid var(--line);}
+.bigbtn small{display:block;font-size:12px;font-weight:700;opacity:.9;}
+.rowbtns{display:flex;gap:10px;}
+.rowbtns>*{flex:1;}
+
+/* fraction display */
+.fracbox{
+  background:var(--card);border:2px solid var(--line);border-radius:22px;box-shadow:var(--shadow);
+  padding:18px 12px;text-align:center;margin-bottom:14px;
+}
+.frac{display:inline-block;text-align:center;vertical-align:middle;}
+.frac .num,.frac .den{display:block;font-size:50px;font-weight:800;line-height:1.15;padding:0 7px;}
+.qa-row{display:flex;align-items:center;justify-content:center;gap:12px;}
+.qa-eq{font-size:32px;font-weight:800;}
+.afrac{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.afrac .abar{width:104px;border-top:5px solid var(--ink);border-radius:3px;}
+.afrac .ansfield{width:96px;min-height:58px;font-size:34px;border-radius:13px;}
+.afrac .anslabel{font-size:11px;}
+.frac .barline{display:block;height:0;border-top:5px solid var(--ink);border-radius:3px;margin:3px 0;}
+html,body{touch-action:manipulation;}
+button{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.frac.small .num,.frac.small .den{font-size:34px;}
+.frac-arrow{font-size:30px;font-weight:800;color:var(--accent-d);margin:0 6px;vertical-align:middle;}
+.q-label{font-size:16px;font-weight:800;color:var(--ink-soft);margin-bottom:8px;}
+.feedback{min-height:30px;font-size:18px;font-weight:800;text-align:center;margin:6px 0 10px;}
+.feedback.good{color:var(--good);}
+.feedback.bad{color:var(--bad);}
+.feedback.bonus{color:var(--gold);}
+
+/* divisor buttons */
+.divgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px;}
+.divbtn{
+  border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:16px;
+  min-height:64px;font-size:26px;font-weight:800;box-shadow:var(--shadow);
+}
+.divbtn:active{transform:scale(.95);}
+.divbtn.glow{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,183,3,.45), var(--shadow);background:#fff8e1;}
+@media (prefers-color-scheme: dark){ .divbtn.glow{background:#4a3a17;} }
+.divbtn.shake{animation:shake .35s;}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.donebtn{
+  width:100%;border:none;border-radius:16px;min-height:60px;font-size:19px;font-weight:800;
+  background:var(--teal);color:#fff;box-shadow:0 4px 0 var(--teal-d);margin-bottom:10px;
+}
+.donebtn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--teal-d);}
+.hintbtn{
+  width:100%;border:2px dashed var(--accent);background:transparent;color:var(--accent-d);
+  border-radius:16px;min-height:52px;font-size:16px;font-weight:800;margin-bottom:10px;
+}
+.hintbox{
+  background:#fff8e1;border:2px solid var(--gold);border-radius:16px;padding:12px 14px;
+  font-size:16px;font-weight:700;line-height:1.6;margin-bottom:12px;display:none;
+}
+@media (prefers-color-scheme: dark){ .hintbox{background:#3d3212;} }
+.hintbox.on{display:block;}
+
+/* keypad */
+.ansrow{display:flex;align-items:center;justify-content:center;gap:14px;margin:6px 0 4px;}
+.ansfield{
+  font-family:inherit;
+  width:110px;min-height:76px;border:3px solid var(--line);border-radius:16px;background:var(--card);
+  font-size:40px;font-weight:800;display:flex;align-items:center;justify-content:center;color:var(--ink);
+}
+.ansfield.active{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,140,66,.35);}
+.ansfield .ph{color:var(--ink-soft);font-size:20px;}
+.anslabel{font-size:13px;font-weight:800;color:var(--ink-soft);text-align:center;}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:340px;margin:12px auto 0;}
+.key{
+  border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:16px;
+  min-height:62px;font-size:26px;font-weight:800;box-shadow:var(--shadow);
+}
+.key:active{transform:scale(.94);background:var(--chip);}
+.key.util{font-size:19px;color:var(--accent-d);}
+
+/* status chips */
+.statusline{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:10px;}
+.chip{
+  background:var(--chip);border:2px solid var(--line);border-radius:999px;
+  padding:6px 14px;font-size:15px;font-weight:800;
+}
+.chip.combo{color:var(--accent-d);border-color:var(--gold);}
+.hearts{font-size:24px;letter-spacing:2px;}
+.timerbar{height:12px;background:var(--chip);border-radius:999px;overflow:hidden;margin:0 0 12px;}
+.timerbar>i{display:block;height:100%;background:var(--teal);border-radius:999px;}
+.timerbar>i.low{background:var(--red);}
+
+/* adventure map */
+.advmap{display:flex;align-items:center;justify-content:space-between;margin:4px 2px 14px;gap:2px;}
+.advnode{
+  width:34px;height:34px;border-radius:50%;background:var(--card);border:2px solid var(--line);
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex:0 0 auto;
+}
+.advnode.done{background:var(--teal);color:#fff;border-color:var(--teal);}
+.advnode.now{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,140,66,.4);font-size:17px;}
+.advnode.boss{width:42px;height:42px;font-size:19px;}
+.advline{flex:1;height:4px;background:var(--line);border-radius:2px;}
+.effectlist{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.effectchip{
+  background:#e7f9f5;border:2px solid var(--teal);color:var(--teal-d);border-radius:999px;
+  font-size:13px;font-weight:800;padding:5px 11px;
+}
+@media (prefers-color-scheme: dark){ .effectchip{background:#173b36;color:#7fe3d4;} }
+.bossstage{text-align:center;margin-bottom:6px;}
+.bossstage .bname{font-size:22px;font-weight:800;}
+.bosshp{display:flex;gap:5px;justify-content:center;margin:6px 0 2px;}
+.bosshp i{width:30px;height:14px;border-radius:7px;background:var(--red);display:block;}
+.bosshp i.off{background:var(--line);}
+
+/* effect choice */
+.fxgrid{display:grid;gap:12px;}
+.fxcard{
+  border:3px solid var(--line);background:var(--card);border-radius:20px;box-shadow:var(--shadow);
+  padding:16px;text-align:left;color:var(--ink);min-height:96px;width:100%;
+}
+.fxcard:active{transform:scale(.98);}
+.fxcard .fxi{font-size:32px;}
+.fxcard .fxt{font-size:19px;font-weight:800;margin:4px 0 2px;}
+.fxcard .fxd{font-size:14px;color:var(--ink-soft);font-weight:700;line-height:1.5;}
+
+/* zukan */
+.zgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.zcell{
+  border:2px solid var(--line);background:var(--card);border-radius:16px;box-shadow:var(--shadow);
+  padding:10px 4px 8px;text-align:center;color:var(--ink);position:relative;min-height:118px;width:100%;
+}
+.zcell .zsvg{height:52px;display:flex;align-items:center;justify-content:center;}
+.zcell .zname{font-size:13px;font-weight:800;line-height:1.3;min-height:32px;}
+.zcell .zstars{font-size:11px;color:var(--gold);font-weight:800;}
+.zcell .zcount{font-size:12px;color:var(--ink-soft);font-weight:800;}
+.zcell .heart{
+  position:absolute;top:4px;right:4px;border:none;background:transparent;font-size:20px;
+  min-width:40px;min-height:40px;color:#d8c9ae;
+}
+.zcell .heart.on{color:var(--red);}
+.zcell.unowned .zsvg svg{filter:brightness(0);opacity:.45;}
+.progress-note{font-size:14px;font-weight:800;color:var(--ink-soft);text-align:center;margin:8px 0 12px;}
+.wishbox{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:12px;margin-bottom:14px;box-shadow:var(--shadow);}
+.wishbox h3{margin:0 0 8px;font-size:16px;}
+.wishrow{display:flex;flex-wrap:wrap;gap:8px;}
+.wishitem{display:flex;align-items:center;gap:6px;background:var(--chip);border-radius:999px;padding:4px 12px 4px 6px;font-size:13px;font-weight:800;}
+.wishitem .zsvg{height:26px;display:flex;align-items:center;}
+.wishitem.unowned .zsvg svg{filter:brightness(0);opacity:.45;}
+
+/* boss zukan */
+.bossgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.bosscell{
+  border:2px solid var(--line);background:var(--card);border-radius:18px;box-shadow:var(--shadow);
+  padding:12px;text-align:center;
+}
+.bosscell .bsvg{height:96px;display:flex;align-items:center;justify-content:center;}
+.bosscell.unmet .bsvg svg{filter:brightness(0);opacity:.4;}
+.bosscell .bname{font-size:17px;font-weight:800;}
+.bosscell .bsub{font-size:12px;color:var(--ink-soft);font-weight:700;}
+
+/* records */
+.rectable{width:100%;border-collapse:collapse;background:var(--card);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);}
+.rectable th,.rectable td{padding:10px 8px;font-size:15px;font-weight:700;text-align:center;border-bottom:1px solid var(--line);}
+.rectable th{background:var(--chip);font-weight:800;}
+.rectable tr.weak td{color:var(--bad);font-weight:800;}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.statcard{background:var(--card);border:2px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:12px;text-align:center;}
+.statcard .sv{font-size:26px;font-weight:800;color:var(--accent-d);}
+.statcard .sl{font-size:12px;color:var(--ink-soft);font-weight:800;}
+textarea{
+  width:100%;min-height:110px;border:2px solid var(--line);border-radius:14px;padding:10px;
+  font-family:monospace;font-size:12px;background:var(--card);color:var(--ink);
+}
+h3.sect{font-size:18px;margin:20px 0 10px;font-weight:800;}
+
+/* overlay */
+.overlay{
+  position:fixed;inset:0;background:rgba(60,35,5,.55);display:none;align-items:center;justify-content:center;
+  padding:18px;z-index:50;
+}
+.overlay.on{display:flex;}
+.pop{
+  background:var(--card);border-radius:24px;padding:22px 18px;max-width:420px;width:100%;
+  text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.3);max-height:88vh;overflow:auto;
+}
+.pop .ptitle{font-size:22px;font-weight:800;margin:6px 0;}
+.pop .ptext{font-size:15px;font-weight:700;line-height:1.6;color:var(--ink-soft);}
+.pop .psvg{height:96px;display:flex;align-items:center;justify-content:center;}
+.pop.legend{border:4px solid var(--gold);}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden;display:none;}
+.confetti.on{display:block;}
+.confetti i{position:absolute;top:-20px;width:11px;height:16px;border-radius:3px;animation:fall linear forwards;}
+@keyframes fall{to{transform:translateY(105vh) rotate(560deg);}}
+@media (prefers-reduced-motion: reduce){ .confetti i{animation:none;} }
+.foot-note{font-size:12px;color:var(--ink-soft);text-align:center;font-weight:700;margin-top:16px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ============ HOME ============ -->
+<section class="screen on" id="scr-home">
+  <div class="topbar"><h1>📚 算数トレーニング</h1></div>
+  <div class="kinako"><div class="face">🌸</div><div><span class="who">きなこ</span><p id="kinako-home">あら、奈々子ちゃん。今日も算数の冒険にいきましょう。約分は「何で割れるか」を見つけるのがコツよ。</p></div></div>
+
+  <div class="mate-card">
+    <div id="mate-home-svg"></div>
+    <div class="mate-info">
+      <div class="mname">相棒：フトアゴの「ごま」</div>
+      <div class="lvbox" style="text-align:left;"><span class="lv">レベル </span><span class="lvnum" id="mate-lv">1</span></div>
+      <div class="msub" id="mate-sub">せいかい 0 問</div>
+      <div class="bar"><i id="mate-bar" style="width:0%"></i></div>
+      <div class="msub" id="mate-next"></div>
+    </div>
+  </div>
+
+  <h3 class="sect" style="margin-top:4px;">モジュールを えらんでね</h3>
+  <div class="modgrid">
+    <button class="modbtn" id="mod-yakubun"><div class="mi">➗</div><div class="mt">約分</div><div class="ms">ぶんすうを 小さくしよう</div></button>
+    <button class="modbtn soon" disabled><div class="mi">🧮</div><div class="mt">計算</div><div class="ms">じゅんびちゅう</div></button>
+    <button class="modbtn soon" disabled><div class="mi">🔗</div><div class="mt">通分</div><div class="ms">じゅんびちゅう</div></button>
+    <button class="modbtn soon" disabled><div class="mi">📊</div><div class="mt">割合</div><div class="ms">じゅんびちゅう</div></button>
+  </div>
+
+  <button class="bigbtn ghost" id="go-zukan">🎒 アイテムずかん<span id="zukan-count" style="float:right;font-weight:800;"></span></button>
+  <button class="bigbtn ghost" id="go-boss">👹 ボスずかん</button>
+  <button class="bigbtn ghost" id="go-records">📈 きろく</button>
+  <p class="foot-note">アイテムは 10問とくごとに 1つ ドロップするよ。<br>ほしい アイテムは ずかんで ❤ を つけてね。</p>
+</section>
+
+<!-- ============ 約分メニュー ============ -->
+<section class="screen" id="scr-yakubun">
+  <div class="topbar"><button class="backbtn" data-back="scr-home">←</button><h2>➗ 約分</h2></div>
+  <div class="kinako"><div class="face">🌸</div><div><span class="who">きなこ</span><p id="kinako-yakubun">約分は、分子と分母を 同じ数で割って 小さくすること。まずは「れんしゅう」で ゆっくり コツをつかみましょう。</p></div></div>
+
+  <h3 class="sect" style="margin-top:2px;">れんしゅう（ステップ式）</h3>
+  <div class="rowbtns">
+    <button class="bigbtn teal" data-practice="1">Lv1<small>2で 割れる問題が 中心</small></button>
+    <button class="bigbtn teal" data-practice="2">Lv2<small>3・5も まざるよ</small></button>
+    <button class="bigbtn teal" data-practice="3">Lv3<small>大きい 公約数に 挑戦</small></button>
+  </div>
+  <button class="bigbtn" id="go-challenge">⏱ チャレンジ（10問）<small>タイマーと コンボつき・最終形を 入力</small></button>
+  <button class="bigbtn" id="go-adventure" style="background:var(--pink);box-shadow:0 4px 0 #d14e7e;">🗺 ぼうけんモード<small>8ステージ＋ボス戦・特殊効果を 3択で えらんで 進む ローグライク</small></button>
+  <div class="mate-card">
+    <div id="mate-yaku-svg"></div>
+    <div class="mate-info">
+      <div class="mname">ごまも 一緒に 行くよ</div>
+      <div class="msub">冒険で ボスを 倒すと「ボスずかん」に 記録されるよ。倒したボス：<b id="boss-count">0 / 6</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ れんしゅう ============ -->
+<section class="screen" id="scr-practice">
+  <div class="topbar"><button class="backbtn" data-back="scr-yakubun">←</button><h2>れんしゅう</h2><div class="spacer"></div><span class="chip" id="prac-lv"></span></div>
+  <div class="statusline">
+    <span class="chip" id="prac-progress">1 / 5 問</span>
+    <span class="chip combo" id="prac-combo">🔥 コンボ 0</span>
+  </div>
+  <div class="fracbox">
+    <div class="q-label">この分数を 約分しよう</div>
+    <span class="frac" id="prac-orig"></span>
+    <span class="frac-arrow" id="prac-arrow" style="display:none;">→</span>
+    <span class="frac" id="prac-cur"></span>
+    <div class="q-label" style="margin-top:10px;">何で 割れる？</div>
+  </div>
+  <div class="feedback" id="prac-feedback"></div>
+  <div class="divgrid" id="prac-divs"></div>
+  <button class="donebtn" id="prac-done">✓ もう 割れない（約分おわり）</button>
+  <button class="hintbtn" id="prac-hint">💡 ヒントを みる</button>
+  <div class="hintbox" id="prac-hintbox"></div>
+  <div class="kinako"><div class="face">🌸</div><div><span class="who">きなこ</span><p id="kinako-practice">まず「何で割れる？」を 考えてから 割るのよ。その一手間が 約分の力になるわ。</p></div></div>
+</section>
+
+<!-- ============ チャレンジ ============ -->
+<section class="screen" id="scr-challenge">
+  <div class="topbar"><button class="backbtn" data-back="scr-yakubun">←</button><h2>⏱ チャレンジ</h2></div>
+  <div class="statusline">
+    <span class="chip" id="ch-progress">1 / 10 問</span>
+    <span class="chip">⏱ <span id="ch-time">0.0</span> 秒</span>
+    <span class="chip combo" id="ch-combo">🔥 コンボ 0</span>
+  </div>
+  <div class="fracbox">
+    <div class="q-label">約分した 最終形は？（分母から 入力してね）</div>
+    <div class="qa-row">
+      <span class="frac" id="ch-q"></span>
+      <span class="qa-eq">=</span>
+      <div class="afrac">
+        <div><button type="button" class="ansfield" id="ch-num" data-field="num">？</button><div class="anslabel">分子（うえ）</div></div>
+        <div class="abar"></div>
+        <div><button type="button" class="ansfield" id="ch-den" data-field="den">？</button><div class="anslabel">分母（した）</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="feedback" id="ch-feedback"></div>
+  <button class="bigbtn" id="ch-submit" style="margin:6px 0 4px;">こたえる ✓</button>
+  <div class="keypad" data-pad="ch"></div>
+  <div class="kinako"><div class="face">🌸</div><div><span class="who">きなこ</span><p id="kinako-challenge">約分した 最終形を テンキーで 入力してね。速さより 正確さが 大事よ。</p></div></div>
+</section>
+
+<!-- ============ ぼうけん ============ -->
+<section class="screen" id="scr-adv">
+  <div class="topbar"><button class="backbtn" id="adv-quit">←</button><h2>🗺 ぼうけん</h2><div class="spacer"></div><span class="hearts" id="adv-hearts">❤❤❤</span></div>
+  <div class="advmap" id="adv-map"></div>
+  <div class="effectlist" id="adv-effects"></div>
+  <div class="bossstage" id="adv-bossbox" style="display:none;">
+    <div id="adv-boss-svg"></div>
+    <div class="bname" id="adv-boss-name"></div>
+    <div class="bosshp" id="adv-boss-hp"></div>
+  </div>
+  <div class="statusline">
+    <span class="chip" id="adv-progress"></span>
+    <span class="chip combo" id="adv-combo">🔥 コンボ 0</span>
+    <span class="chip" id="adv-guard" style="display:none;">🛡 ガード 0</span>
+  </div>
+  <div class="timerbar" id="adv-timerwrap"><i id="adv-timer" style="width:100%"></i></div>
+  <div class="fracbox">
+    <div class="q-label" id="adv-stage-label">ステージ 1</div>
+    <div class="qa-row">
+      <span class="frac" id="adv-q"></span>
+      <span class="qa-eq">=</span>
+      <div class="afrac">
+        <div><button type="button" class="ansfield" id="adv-num" data-field="num">？</button><div class="anslabel">分子（うえ）</div></div>
+        <div class="abar"></div>
+        <div><button type="button" class="ansfield" id="adv-den" data-field="den">？</button><div class="anslabel">分母（した）</div></div>
+      </div>
+    </div>
+    <div id="adv-sensor" style="margin-top:10px;display:none;"></div>
+  </div>
+  <div class="feedback" id="adv-feedback"></div>
+  <button class="bigbtn" id="adv-submit" style="margin:6px 0 4px;">こたえる ✓</button>
+  <div class="keypad" data-pad="adv"></div>
+  <div class="kinako"><div class="face">🌸</div><div><span class="who">きなこ</span><p id="kinako-adv">ごまと 一緒に 地底を 進みましょう。ミスすると ハートが 減るから 気をつけて。</p></div></div>
+</section>
+
+<!-- ============ 特殊効果 3択 ============ -->
+<section class="screen" id="scr-effect">
+  <div class="topbar"><h2>✨ 特殊効果を えらんでね</h2></div>
+  <div class="kinako"><div class="face">🌸</div><div><span class="who">きなこ</span><p>ステージ クリア！ ごほうびに 特殊効果を 1つ 選べるわ。効果は この冒険の あいだ 重なっていくよ。組み合わせを 工夫してね。</p></div></div>
+  <div class="fxgrid" id="fx-grid"></div>
+</section>
+
+<!-- ============ アイテムずかん ============ -->
+<section class="screen" id="scr-zukan">
+  <div class="topbar"><button class="backbtn" data-back="scr-home">←</button><h2>🎒 アイテムずかん</h2></div>
+  <div class="kinako"><div class="face">🌸</div><div><span class="who">きなこ</span><p>持っていない アイテムは シルエットだけ。名前は 手に入れた瞬間に 初めて 分かるの。ほしい ものには ❤ を つけておいてね。</p></div></div>
+  <div class="progress-note" id="zukan-progress"></div>
+  <div class="wishbox" id="wishbox"><h3>❤ ほしいもの</h3><div class="wishrow" id="wishrow"></div></div>
+  <div class="zgrid" id="zukan-grid"></div>
+</section>
+
+<!-- ============ ボスずかん ============ -->
+<section class="screen" id="scr-boss">
+  <div class="topbar"><button class="backbtn" data-back="scr-home">←</button><h2>👹 ボスずかん</h2></div>
+  <div class="kinako"><div class="face">🌸</div><div><span class="who">きなこ</span><p>冒険の たびに ボスが 順番に あらわれるわ。倒した ボスは ここに 記録されるよ。</p></div></div>
+  <div class="bossgrid" id="boss-grid"></div>
+</section>
+
+<!-- ============ きろく ============ -->
+<section class="screen" id="scr-records">
+  <div class="topbar"><button class="backbtn" data-back="scr-home">←</button><h2>📈 きろく</h2></div>
+  <div class="kinako"><div class="face">🌸</div><div><span class="who">きなこ</span><p id="kinako-records">記録を見ると「苦手な 割る数」が 分かるわ。そこを 練習すると 約分が ぐんと 速くなるよ。</p></div></div>
+  <div class="statgrid">
+    <div class="statcard"><div class="sv" id="rec-total">0</div><div class="sl">解いた 問題数</div></div>
+    <div class="statcard"><div class="sv" id="rec-acc">—</div><div class="sl">正解率（一発正解）</div></div>
+    <div class="statcard"><div class="sv" id="rec-chbest">—</div><div class="sl">チャレンジ ベスト</div></div>
+    <div class="statcard"><div class="sv" id="rec-adv">0</div><div class="sl">ボスを 倒した回数</div></div>
+  </div>
+  <h3 class="sect">割る数ごとの 正解率</h3>
+  <table class="rectable"><thead><tr><th>割る数</th><th>問題数</th><th>一発正解</th><th>正解率</th></tr></thead><tbody id="rec-divbody"></tbody></table>
+  <p class="foot-note" id="rec-weak"></p>
+  <h3 class="sect">記録の 書き出し・読み込み</h3>
+  <p class="foot-note" style="text-align:left;">端末を 替えるときは、記録を 書き出して コピーしておいて、新しい端末で 貼り付けて 読み込んでね。</p>
+  <button class="bigbtn teal" id="rec-export">📤 記録を 書き出す</button>
+  <textarea id="rec-text" placeholder="ここに 記録データが 表示されます。読み込むときは ここに 貼り付けてね。"></textarea>
+  <div class="rowbtns" style="margin-top:10px;">
+    <button class="bigbtn ghost" id="rec-copy">📋 コピーする</button>
+    <button class="bigbtn ghost" id="rec-import">📥 読み込む</button>
+  </div>
+  <div class="feedback" id="rec-feedback"></div>
+</section>
+
+</div>
+
+<!-- overlay -->
+<div class="overlay" id="overlay"><div class="pop" id="pop"></div></div>
+<div class="confetti" id="confetti"></div>
+
+<script>
+"use strict";
+/* ================= ユーティリティ ================= */
+function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){ var t=a%b; a=b; b=t; } return a||1; }
+function randi(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function shuffle(arr){ var a=arr.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; } return a; }
+function el(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
+
+/* ================= アイテム定義（全30種） ================= */
+var ITEMS=[
+ {id:"woodsword", name:"木の剣", r:1, w:1, icon:"sword", c:"#b07a45"},
+ {id:"woodpick", name:"木のつるはし", r:1, w:1, icon:"pick", c:"#a9805a"},
+ {id:"stoneaxe", name:"石の斧", r:1, w:1, icon:"axe", c:"#9aa0a6"},
+ {id:"apple", name:"りんご", r:1, w:0, icon:"apple", c:"#e63946"},
+ {id:"mushroom", name:"きのこ", r:1, w:0, icon:"mushroom", c:"#e76f51"},
+ {id:"flower", name:"お花", r:1, w:0, icon:"flower", c:"#ff8fab"},
+ {id:"acorn", name:"どんぐり", r:1, w:0, icon:"acorn", c:"#9c6644"},
+ {id:"candle", name:"ろうそく", r:1, w:0, icon:"candle", c:"#ffd166"},
+ {id:"feather", name:"白い羽根", r:1, w:0, icon:"feather", c:"#a8dadc"},
+ {id:"pendant", name:"小石のペンダント", r:1, w:0, icon:"pendant", c:"#8ecae6"},
+ {id:"ironsword", name:"鉄の剣", r:2, w:1, icon:"sword", c:"#adb5bd"},
+ {id:"ironbow", name:"鉄の弓", r:2, w:1, icon:"bow", c:"#868e96"},
+ {id:"wand", name:"魔法の杖", r:2, w:1, icon:"wand", c:"#b5179e"},
+ {id:"ironpick", name:"鉄のつるはし", r:2, w:1, icon:"pick", c:"#868e96"},
+ {id:"silvershield", name:"銀の盾", r:2, w:0, icon:"shield", c:"#ced4da"},
+ {id:"potion", name:"回復ポーション", r:2, w:0, icon:"potion", c:"#ef476f"},
+ {id:"bluegem", name:"青い宝石", r:2, w:0, icon:"gem", c:"#4361ee"},
+ {id:"butterfly", name:"ちょうちょの標本", r:2, w:0, icon:"butterfly", c:"#f72585"},
+ {id:"starfrag", name:"星のかけら", r:2, w:0, icon:"star", c:"#ffd60a"},
+ {id:"map", name:"宝の地図", r:2, w:0, icon:"map", c:"#dda15e"},
+ {id:"crystalsword", name:"クリスタルの剣", r:3, w:1, icon:"sword", c:"#4cc9f0"},
+ {id:"firesword", name:"炎の剣", r:3, w:1, icon:"sword", c:"#fb5607"},
+ {id:"snowbow", name:"雪の弓", r:3, w:1, icon:"bow", c:"#90e0ef"},
+ {id:"thunderwand", name:"雷の杖", r:3, w:1, icon:"wand", c:"#ffbe0b"},
+ {id:"rainbowgem", name:"虹の宝石", r:3, w:0, icon:"gem", c:"#7209b7"},
+ {id:"royalshield", name:"王家の盾", r:3, w:0, icon:"shield", c:"#ffb703"},
+ {id:"stormbringer", name:"ストームブリンガー", r:4, w:1, icon:"sword", c:"#3a0ca3"},
+ {id:"runesong", name:"ルーンソング", r:4, w:1, icon:"sword", c:"#06d6a0"},
+ {id:"phantomspark", name:"ファントムスパーク", r:4, w:1, icon:"bow", c:"#80ffdb"},
+ {id:"corecrystal", name:"コアの結晶", r:4, w:0, icon:"crystal", c:"#ff9e00"}
+];
+function itemById(id){ for(var i=0;i<ITEMS.length;i++) if(ITEMS[i].id===id) return ITEMS[i]; return null; }
+function stars(r){ var s=""; for(var i=0;i<r;i++) s+="★"; return s; }
+
+function itemSVG(it,size){
+ size=size||52;
+ var c=it.c, s='<svg width="'+size+'" height="'+size+'" viewBox="0 0 60 60" aria-hidden="true">';
+ switch(it.icon){
+  case "sword": s+='<path d="M32 4 L38 10 L22 34 L16 30 Z" fill="'+c+'"/><rect x="12" y="32" width="16" height="5" rx="2" transform="rotate(-38 20 34)" fill="#8a5a2b"/><rect x="8" y="40" width="6" height="13" rx="3" transform="rotate(-38 11 46)" fill="#6b4423"/>'; break;
+  case "bow": s+='<path d="M18 6 Q44 30 18 54" fill="none" stroke="'+c+'" stroke-width="5" stroke-linecap="round"/><line x1="18" y1="6" x2="18" y2="54" stroke="#ddd" stroke-width="2"/><line x1="18" y1="30" x2="46" y2="30" stroke="#8a5a2b" stroke-width="3"/><path d="M46 30 L38 25 L38 35 Z" fill="#888"/>'; break;
+  case "wand": s+='<rect x="26" y="26" width="6" height="30" rx="3" transform="rotate(24 29 41)" fill="#8a5a2b"/><path d="M30 4 L33 13 L42 16 L33 19 L30 28 L27 19 L18 16 L27 13 Z" fill="'+c+'"/>'; break;
+  case "pick": s+='<path d="M8 20 Q30 4 52 20 Q30 14 8 20Z" fill="'+c+'"/><rect x="27" y="16" width="6" height="36" rx="3" fill="#8a5a2b"/>'; break;
+  case "axe": s+='<rect x="27" y="14" width="6" height="40" rx="3" fill="#8a5a2b"/><path d="M30 12 Q50 14 48 30 Q38 26 30 28 Z" fill="'+c+'"/>'; break;
+  case "apple": s+='<circle cx="30" cy="36" r="17" fill="'+c+'"/><path d="M30 20 Q32 12 40 10" stroke="#6b4423" stroke-width="3" fill="none"/><ellipse cx="34" cy="16" rx="7" ry="4" fill="#57cc99" transform="rotate(-20 34 16)"/>'; break;
+  case "mushroom": s+='<path d="M8 32 Q30 8 52 32 Q30 24 8 32Z" fill="'+c+'"/><circle cx="22" cy="24" r="3.4" fill="#fff"/><circle cx="38" cy="22" r="2.8" fill="#fff"/><path d="M24 32 L36 32 L34 50 L26 50Z" fill="#f1e3c6"/>'; break;
+  case "flower": s+='<g fill="'+c+'"><circle cx="30" cy="16" r="7"/><circle cx="18" cy="26" r="7"/><circle cx="42" cy="26" r="7"/><circle cx="24" cy="36" r="7"/><circle cx="36" cy="36" r="7"/></g><circle cx="30" cy="27" r="6" fill="#ffd60a"/><path d="M30 38 L30 54" stroke="#37b24d" stroke-width="3"/>'; break;
+  case "acorn": s+='<path d="M16 26 Q30 20 44 26 L42 40 Q30 54 18 40Z" fill="'+c+'"/><path d="M14 26 Q30 16 46 26 Q30 30 14 26Z" fill="#6b4423"/><rect x="28" y="12" width="4" height="7" fill="#6b4423"/>'; break;
+  case "candle": s+='<rect x="22" y="26" width="16" height="26" rx="3" fill="#f8f4ec"/><path d="M30 8 Q36 16 30 24 Q24 16 30 8Z" fill="'+c+'"/><rect x="16" y="50" width="28" height="5" rx="2" fill="#c9a86a"/>'; break;
+  case "feather": s+='<path d="M44 8 Q20 14 14 40 Q13 50 20 50 Q44 44 44 8Z" fill="'+c+'"/><path d="M18 46 Q30 28 42 14" stroke="#fff" stroke-width="2.4" fill="none"/>'; break;
+  case "pendant": s+='<path d="M14 8 Q30 26 46 8" stroke="#888" stroke-width="2.4" fill="none"/><path d="M30 24 L40 36 L30 52 L20 36Z" fill="'+c+'"/>'; break;
+  case "shield": s+='<path d="M30 6 L48 12 L48 30 Q48 46 30 54 Q12 46 12 30 L12 12Z" fill="'+c+'" stroke="#8a6d3b" stroke-width="2.4"/><path d="M30 16 L30 44 M20 24 L40 24" stroke="#8a6d3b" stroke-width="3"/>'; break;
+  case "potion": s+='<rect x="26" y="8" width="8" height="8" fill="#c9a86a"/><path d="M24 16 L36 16 L42 34 Q44 52 30 52 Q16 52 18 34Z" fill="'+c+'" opacity=".9"/><ellipse cx="30" cy="40" rx="9" ry="5" fill="#fff" opacity=".35"/>'; break;
+  case "gem": s+='<path d="M14 22 L24 10 L36 10 L46 22 L30 50Z" fill="'+c+'"/><path d="M14 22 L46 22 M24 10 L30 22 L36 10 M30 22 L30 50" stroke="#fff" stroke-width="1.8" opacity=".6" fill="none"/>'; break;
+  case "butterfly": s+='<ellipse cx="19" cy="24" rx="10" ry="13" fill="'+c+'" transform="rotate(-24 19 24)"/><ellipse cx="41" cy="24" rx="10" ry="13" fill="'+c+'" transform="rotate(24 41 24)"/><ellipse cx="21" cy="40" rx="7" ry="9" fill="'+c+'" opacity=".7"/><ellipse cx="39" cy="40" rx="7" ry="9" fill="'+c+'" opacity=".7"/><rect x="28" y="16" width="4" height="30" rx="2" fill="#444"/>'; break;
+  case "star": s+='<path d="M30 6 L37 22 L54 23 L41 34 L45 51 L30 41 L15 51 L19 34 L6 23 L23 22Z" fill="'+c+'" stroke="#e0a800" stroke-width="2"/>'; break;
+  case "map": s+='<path d="M10 14 L24 8 L38 14 L50 9 L50 44 L38 50 L24 44 L10 49Z" fill="'+c+'"/><path d="M24 8 L24 44 M38 14 L38 50" stroke="#b08954" stroke-width="2"/><path d="M40 32 L47 39 M47 32 L40 39" stroke="#e63946" stroke-width="3"/>'; break;
+  case "crystal": s+='<path d="M30 4 L42 20 L38 50 L22 50 L18 20Z" fill="'+c+'"/><path d="M30 4 L30 50 M18 20 L42 20" stroke="#fff" stroke-width="2" opacity=".55"/>'; break;
+  default: s+='<circle cx="30" cy="30" r="18" fill="'+c+'"/>';
+ }
+ return s+"</svg>";
+}
+
+/* ================= ボス定義 ================= */
+var BOSSES=[
+ {id:"ghorm", name:"グルーム", sub:"巨大スライム", c:"#74c69d"},
+ {id:"gorm", name:"ゴーム", sub:"地底の大ミミズ", c:"#e0a458"},
+ {id:"hive", name:"ハイブマザー", sub:"幼虫たちの母", c:"#c77dff"},
+ {id:"azeos", name:"アゼオス", sub:"空の巨鳥", c:"#64dfdf"},
+ {id:"omoroth", name:"オモロス", sub:"溶岩の巨人", c:"#fb5607"},
+ {id:"core", name:"コア", sub:"地底の心臓", c:"#ff9e00"}
+];
+function bossSVG(b,size){
+ size=size||96;
+ var c=b.c, s='<svg width="'+size+'" height="'+size+'" viewBox="0 0 100 100" aria-hidden="true">';
+ switch(b.id){
+  case "ghorm": s+='<path d="M14 78 Q10 40 50 34 Q90 40 86 78 Q86 86 74 86 L26 86 Q14 86 14 78Z" fill="'+c+'"/><circle cx="38" cy="62" r="6" fill="#17301f"/><circle cx="62" cy="62" r="6" fill="#17301f"/><path d="M42 74 Q50 70 58 74" stroke="#17301f" stroke-width="3" fill="none"/><circle cx="26" cy="52" r="4" fill="#fff" opacity=".5"/><circle cx="74" cy="46" r="3" fill="#fff" opacity=".5"/>'; break;
+  case "gorm": s+='<circle cx="26" cy="66" r="15" fill="'+c+'"/><circle cx="48" cy="52" r="17" fill="'+c+'"/><circle cx="70" cy="64" r="14" fill="'+c+'"/><circle cx="44" cy="48" r="3.4" fill="#40260a"/><path d="M40 60 Q48 66 56 59" stroke="#40260a" stroke-width="3" fill="none"/><path d="M20 40 L26 28 L32 40 M62 34 L68 22 L74 34" stroke="'+c+'" stroke-width="5" fill="none"/>'; break;
+  case "hive": s+='<path d="M50 10 L82 28 L82 66 L50 90 L18 66 L18 28Z" fill="'+c+'"/><circle cx="38" cy="46" r="5" fill="#2c1050"/><circle cx="62" cy="46" r="5" fill="#2c1050"/><path d="M40 64 Q50 58 60 64" stroke="#2c1050" stroke-width="3" fill="none"/><circle cx="26" cy="24" r="5" fill="#ffd60a"/><circle cx="76" cy="20" r="4" fill="#ffd60a"/>'; break;
+  case "azeos": s+='<path d="M10 34 Q34 18 50 40 Q66 18 90 34 Q70 44 60 40 Q66 56 50 66 Q34 56 40 40 Q30 44 10 34Z" fill="'+c+'"/><circle cx="50" cy="46" r="4" fill="#083b4c"/><path d="M46 54 L54 54 L50 64Z" fill="#ffb703"/><path d="M38 66 L34 82 M62 66 L66 82" stroke="'+c+'" stroke-width="5"/>'; break;
+  case "omoroth": s+='<rect x="26" y="30" width="48" height="52" rx="12" fill="#5c3a21"/><circle cx="50" cy="22" r="13" fill="#5c3a21"/><circle cx="44" cy="22" r="3.4" fill="'+c+'"/><circle cx="56" cy="22" r="3.4" fill="'+c+'"/><path d="M34 48 Q50 40 66 48 M36 64 Q50 58 64 64" stroke="'+c+'" stroke-width="4" fill="none"/><circle cx="50" cy="54" r="5" fill="'+c+'"/>'; break;
+  case "core": s+='<circle cx="50" cy="50" r="34" fill="none" stroke="#8a6d3b" stroke-width="5"/><path d="M50 14 L64 38 L58 74 L42 74 L36 38Z" fill="'+c+'"/><path d="M50 14 L50 74 M36 38 L64 38" stroke="#fff" stroke-width="2.4" opacity=".6"/><circle cx="50" cy="50" r="6" fill="#fff" opacity=".8"/>'; break;
+ }
+ return s+"</svg>";
+}
+
+/* ================= フトアゴ SVG ================= */
+function dragonSVG(level,size){
+ size=size||92;
+ var s='<svg width="'+size+'" height="'+size+'" viewBox="0 0 100 100" aria-hidden="true">';
+ s+='<path d="M58 74 Q88 78 92 58 Q94 84 66 84 Q56 84 58 74Z" fill="#d9a05b"/>';
+ s+='<ellipse cx="44" cy="70" rx="26" ry="17" fill="#e5b26a"/>';
+ s+='<ellipse cx="40" cy="74" rx="16" ry="10" fill="#f4ddae"/>';
+ s+='<path d="M20 62 L12 56 L21 52 M22 70 L13 68 L21 64" stroke="#c98f3d" stroke-width="3" fill="none"/>';
+ s+='<circle cx="30" cy="42" r="17" fill="#e5b26a"/>';
+ s+='<path d="M16 34 L10 26 L19 28 M20 28 L18 18 L25 25 M44 30 L48 20 L50 31" stroke="#c98f3d" stroke-width="3" fill="none"/>';
+ s+='<path d="M17 48 Q30 56 43 48 L40 58 Q30 62 20 58Z" fill="#d9a05b"/>';
+ s+='<circle cx="24" cy="40" r="3" fill="#33241a"/><circle cx="38" cy="40" r="3" fill="#33241a"/>';
+ s+='<circle cx="25" cy="39" r="1.1" fill="#fff"/><circle cx="39" cy="39" r="1.1" fill="#fff"/>';
+ s+='<path d="M27 49 Q31 52 35 49" stroke="#33241a" stroke-width="2" fill="none"/>';
+ s+='<circle cx="18" cy="46" r="3.4" fill="#ffb7a5" opacity=".8"/><circle cx="44" cy="46" r="3.4" fill="#ffb7a5" opacity=".8"/>';
+ if(level>=2) s+='<path d="M40 78 L48 66 L56 78 L48 84Z" fill="#ef476f"/>';
+ if(level>=3) s+='<path d="M18 56 Q30 64 44 56 L44 63 Q30 70 18 63Z" fill="#2fb3a3"/>';
+ if(level>=4) s+='<rect x="52" y="66" width="15" height="11" rx="3" fill="#8a5a2b"/><rect x="57" y="62" width="5" height="6" fill="#8a5a2b"/>';
+ if(level>=5) s+='<path d="M18 24 L22 12 L28 21 L31 9 L35 21 L41 13 L42 25 Q30 29 18 24Z" fill="#ffb703" stroke="#e0a800" stroke-width="1.6"/>';
+ if(level>=7) s+='<path d="M60 30 Q74 22 76 34 Q66 40 60 36Z" fill="#a8dadc"/><path d="M62 34 Q72 30 74 34" stroke="#fff" stroke-width="1.6" fill="none"/>';
+ if(level>=10) s+='<path d="M64 62 Q84 74 76 88 Q62 84 60 70Z" fill="#ef476f" opacity=".85"/><circle cx="30" cy="14" r="3.4" fill="#4cc9f0"/>';
+ return s+"</svg>";
+}
+var LV_TITLES=["たまごから かえったばかり","リボン 見習い","スカーフ 冒険者","バッグ持ちの 探検家","王冠の 勇者","王冠の 勇者","羽飾りの 英雄","羽飾りの 英雄","羽飾りの 英雄","虹の 伝説勇者"];
+function mateLevel(){ return 1+Math.floor(data.totalCorrect/20); }
+function mateTitle(lv){ return LV_TITLES[Math.min(lv,10)-1]; }
+
+/* ================= データ ================= */
+var KEY="nanakoMath.v1";
+var data=null;
+function defaultData(){
+ return {
+  totalQ:0, totalFirst:0, totalCorrect:0,
+  divisorStats:{}, challengeBest:null,
+  items:{}, wishlist:[], bossDefeated:{}, bossSeen:0,
+  advRuns:0, advClears:0, noDrop:0, dropProg:0
+ };
+}
+function loadData(){
+ try{ var raw=localStorage.getItem(KEY); if(raw){ var d=JSON.parse(raw); var def=defaultData(); for(var k in def) if(d[k]===undefined) d[k]=def[k]; return d; } }catch(e){}
+ return defaultData();
+}
+function saveData(){ try{ localStorage.setItem(KEY, JSON.stringify(data)); }catch(e){} }
+data=loadData();
+
+/* ================= 画面遷移 ================= */
+function show(id){
+ var ss=document.querySelectorAll(".screen");
+ for(var i=0;i<ss.length;i++) ss[i].classList.remove("on");
+ el(id).classList.add("on");
+ window.scrollTo(0,0);
+ if(id==="scr-home") renderHome();
+ if(id==="scr-yakubun") renderYakubun();
+ if(id==="scr-zukan") renderZukan();
+ if(id==="scr-boss") renderBossZukan();
+ if(id==="scr-records") renderRecords();
+}
+document.addEventListener("click",function(e){
+ var b=e.target.closest("[data-back]");
+ if(b){ stopChallengeTimer(); stopAdvTimer(); show(b.getAttribute("data-back")); }
+});
+
+/* ================= きなこ ================= */
+var KINAKO_LINES=[
+ "あら、奈々子ちゃん。今日も 算数の冒険に いきましょう。",
+ "約分は「何で割れるか」を 見つける ゲームよ。焦らなくて 大丈夫。",
+ "ごまも 応援してるわ。少しずつ レベルが 上がっていくの、楽しみね。",
+ "アイテムは たまに ドロップするわ。図鑑を 見るのも 楽しみの ひとつよ。",
+ "間違えても 大丈夫。正解するまで 考えれば、それが 力になるわ。"
+];
+function renderHome(){
+ var lv=mateLevel();
+ el("mate-home-svg").innerHTML=dragonSVG(lv,92);
+ el("mate-lv").textContent=lv;
+ el("mate-sub").textContent="「"+mateTitle(lv)+"」・せいかい "+data.totalCorrect+" 問";
+ var into=data.totalCorrect%20;
+ el("mate-bar").style.width=(into/20*100)+"%";
+ el("mate-next").textContent="次のレベルまで あと "+(20-into)+" 問";
+ var owned=0; for(var i=0;i<ITEMS.length;i++) if(data.items[ITEMS[i].id]) owned++;
+ el("zukan-count").textContent=owned+" / "+ITEMS.length;
+ el("kinako-home").textContent=pick(KINAKO_LINES);
+}
+function renderYakubun(){
+ el("mate-yaku-svg").innerHTML=dragonSVG(mateLevel(),72);
+ var n=0; for(var i=0;i<BOSSES.length;i++) if(data.bossDefeated[BOSSES[i].id]) n++;
+ el("boss-count").textContent=n+" / "+BOSSES.length;
+}
+el("mod-yakubun").addEventListener("click",function(){ show("scr-yakubun"); });
+el("go-zukan").addEventListener("click",function(){ show("scr-zukan"); });
+el("go-boss").addEventListener("click",function(){ show("scr-boss"); });
+el("go-records").addEventListener("click",function(){ show("scr-records"); });
+
+/* ================= 紙吹雪 ================= */
+function confetti(big){
+ var box=el("confetti"); box.innerHTML=""; box.classList.add("on");
+ var colors=["#ff8c42","#2fb3a3","#ff6b9d","#ffb703","#4cc9f0","#b5179e"];
+ var n=big?70:36;
+ for(var i=0;i<n;i++){
+  var p=document.createElement("i");
+  p.style.left=(Math.random()*100)+"%";
+  p.style.background=pick(colors);
+  p.style.animationDuration=(1.1+Math.random()*1.4)+"s";
+  p.style.animationDelay=(Math.random()*0.35)+"s";
+  box.appendChild(p);
+ }
+ setTimeout(function(){ box.classList.remove("on"); box.innerHTML=""; },3000);
+}
+
+/* ================= ポップアップ ================= */
+function showPop(html,legend){
+ var pop=el("pop");
+ pop.className="pop"+(legend?" legend":"");
+ pop.innerHTML=html;
+ el("overlay").classList.add("on");
+}
+function closePop(){ el("overlay").classList.remove("on"); }
+el("overlay").addEventListener("click",function(e){ if(e.target===el("overlay")) closePop(); });
+
+/* ================= ドロップ ================= */
+function rollRarity(){
+ var r=Math.random();
+ if(r<0.80) return 1; if(r<0.96) return 2; if(r<0.99) return 3; return 4;
+}
+function drawItem(){
+ var rar=rollRarity();
+ var pool=ITEMS.filter(function(it){ return it.r===rar; });
+ return pick(pool);
+}
+var DROP_QUEUE=[];
+function timedContext(){ return (typeof CH!=="undefined" && CH.active) || (typeof ADV!=="undefined" && ADV.active); }
+function dropQueueHTML(){
+ if(!DROP_QUEUE.length) return "";
+ var rows=DROP_QUEUE.map(function(q){
+  return '<div style="display:flex;align-items:center;gap:8px;justify-content:center;margin-top:6px;">'+itemSVG(q.it,40)+'<span>'+esc(q.title)+'</span></div>';
+ }).join("");
+ DROP_QUEUE=[];
+ return '<div class="ptext" style="margin-top:10px;">🎁 途中で アイテムを 見つけていたよ！</div>'+rows;
+}
+function grantItem(it,quiet){
+ var isNew=!data.items[it.id];
+ var wanted=data.wishlist.indexOf(it.id)>=0;
+ if(it.w){
+  if(!data.items[it.id]) data.items[it.id]={plus:0};
+  else data.items[it.id].plus++;
+ }else{
+  if(!data.items[it.id]) data.items[it.id]={count:1};
+  else data.items[it.id].count++;
+ }
+ saveData();
+ if(quiet) return {isNew:isNew,wanted:wanted};
+ var legend=it.r===4;
+ var title, sub;
+ if(it.w && !isNew){ title=it.name+" が +"+data.items[it.id].plus+" に あがった！"; sub="武器が 強くなったよ！"; }
+ else if(isNew){ title=it.name+" を 手に入れた！"; sub=wanted?"❤ ほしいもの リストの アイテムだよ！ やったね！":"新しい アイテムが ずかんに 増えたよ。"; }
+ else { title=it.name+" を 手に入れた！"; sub="もう 持っている アイテムだよ。"; }
+ if(wanted && isNew) sub="❤ ほしいもの リストの アイテムだよ！ 特別な お祝い！";
+ if(quiet || timedContext()){
+  DROP_QUEUE.push({it:it,title:title,legend:legend,wanted:wanted});
+  return {isNew:isNew,wanted:wanted,queued:true};
+ }
+ showPop(
+  '<div class="psvg">'+itemSVG(it,96)+'</div>'+
+  '<div class="ptext">'+stars(it.r)+(it.r===4?" レジェンド":"")+'</div>'+
+  '<div class="ptitle">'+esc(title)+'</div>'+
+  '<div class="ptext">'+esc(sub)+'</div>'+
+  '<button class="bigbtn" style="margin-top:14px;" onclick="closePop()">やったー！</button>',
+  legend
+ );
+ confetti(legend||wanted);
+ return {isNew:isNew,wanted:wanted};
+}
+function tryDrop(){
+ data.dropProg=(data.dropProg||0)+1;
+ if(data.dropProg>=10){
+  data.dropProg=0;
+  doDrop();
+ }
+ saveData();
+ return null;
+}
+function doDrop(){
+ var it=drawItem();
+ if(typeof ADV!=="undefined" && ADV.active && (ADV.effects.indexOf("lucky")>=0 || (ADV.effects.indexOf("flame")>=0 && ADV.combo>=3))){
+  if(Math.random()<0.3 && it.r<4){
+   var pool=ITEMS.filter(function(x){ return x.r===it.r+1; });
+   if(pool.length) it=pick(pool);
+  }
+ }
+ grantItem(it,false);
+ if(typeof ADV!=="undefined" && ADV.active && ADV.effects.indexOf("digger")>=0 && Math.random()<0.4){
+  grantItem(drawItem(),false);
+ }
+}
+
+/* ================= 問題生成 ================= */
+function genFraction(level,forceIrreducible){
+ var irreducible = forceIrreducible!==undefined? forceIrreducible : Math.random()<0.22;
+ var p,q,tries=0;
+ do{ p=randi(1,9); q=randi(2,12); tries++; }while(gcd(p,q)!==1 && tries<40);
+ if(gcd(p,q)!==1){ p=1; q=2; }
+ if(irreducible) return {n:p,d:q,irreducible:true};
+ var k;
+ if(level===1) k=pick([2,2,2,4]);
+ else if(level===2) k=pick([2,3,5,6,4]);
+ else k=pick([6,7,8,9,12,4,6]);
+ return {n:p*k, d:q*k, irreducible:false};
+}
+function fracHTML(n,d,small){
+ return '<span class="frac'+(small?" small":"")+'"><span class="num">'+n+'</span><span class="barline"></span><span class="den">'+d+'</span></span>';
+}
+
+/* 記録：割る数ごとの統計（ステップの初回挑戦で記録） */
+function recordDivisor(div,ok){
+ var s=data.divisorStats[div]||{try:0,ok:0};
+ s.try++; if(ok) s.ok++;
+ data.divisorStats[div]=s;
+}
+function recordQuestion(firstOk){
+ data.totalQ++;
+ if(firstOk){ data.totalFirst++; data.totalCorrect++; }
+ saveData();
+}
+
+/* ================= テンキー ================= */
+function buildKeypads(){
+ var pads=document.querySelectorAll(".keypad");
+ for(var i=0;i<pads.length;i++){
+  var which=pads[i].getAttribute("data-pad"), html="";
+  var keys=["1","2","3","4","5","6","7","8","9","C","0","⌫"];
+  for(var j=0;j<keys.length;j++){
+   html+='<button class="key'+(keys[j]==="C"||keys[j]==="⌫"?" util":"")+'" data-pad="'+which+'" data-key="'+keys[j]+'">'+keys[j]+"</button>";
+  }
+  pads[i].innerHTML=html;
+ }
+}
+buildKeypads();
+var PADS={
+ ch:{num:"",den:"",field:"num"},
+ adv:{num:"",den:"",field:"num"}
+};
+function renderPad(which){
+ var st=PADS[which];
+ var nEl=el(which+"-num"), dEl=el(which+"-den");
+ nEl.innerHTML=st.num===""?'<span class="ph">？</span>':st.num;
+ dEl.innerHTML=st.den===""?'<span class="ph">？</span>':st.den;
+ nEl.classList.toggle("active",st.field==="num");
+ dEl.classList.toggle("active",st.field==="den");
+}
+function resetPad(which){ PADS[which]={num:"",den:"",field:"den"}; renderPad(which); }
+document.addEventListener("click",function(e){
+ var k=e.target.closest("[data-key]");
+ if(k){
+  var which=k.getAttribute("data-pad"), key=k.getAttribute("data-key"), st=PADS[which];
+  if(key==="C"){ st.num=""; st.den=""; }
+  else if(key==="⌫"){ st[st.field]=st[st.field].slice(0,-1); }
+  else { if(st[st.field].length<3) st[st.field]+=key; if(st.field==="den" && st.den.length>=2) st.field="num"; }
+  renderPad(which);
+  return;
+ }
+ var f=e.target.closest(".ansfield");
+ if(f){
+  var scr=f.id.indexOf("ch-")===0?"ch":"adv";
+  var fld=f.getAttribute("data-field");
+  PADS[scr].field=fld;
+  PADS[scr][fld]="";
+  renderPad(scr);
+ }
+});
+
+/* ================= れんしゅう ================= */
+var PRAC={active:false,level:1,idx:0,total:5,orig:null,n:0,d:0,stepFirst:true,qClean:true,hint:0,combo:0,steps:0,finished:false};
+var pracDivBtns=[];
+function buildDivBtns(){
+ var box=el("prac-divs"); box.innerHTML=""; pracDivBtns=[];
+ for(var d=2;d<=9;d++){
+  (function(div){
+   var b=document.createElement("button");
+   b.className="divbtn"; b.textContent=div;
+   b.addEventListener("click",function(){ pracDivide(div,b); });
+   box.appendChild(b); pracDivBtns.push({div:div,btn:b});
+  })(d);
+ }
+}
+buildDivBtns();
+function startPractice(level){
+ PRAC={active:true,level:level,idx:0,total:5,orig:null,n:0,d:0,stepFirst:true,qClean:true,hint:0,combo:0,steps:0,finished:false};
+ el("prac-lv").textContent="Lv"+level;
+ show("scr-practice");
+ nextPracticeQ();
+}
+var pracBtns=document.querySelectorAll("[data-practice]");
+for(var pi=0;pi<pracBtns.length;pi++){
+ (function(btn){ btn.addEventListener("click",function(){ startPractice(parseInt(btn.getAttribute("data-practice"),10)); }); })(pracBtns[pi]);
+}
+function nextPracticeQ(){
+ PRAC.orig=genFraction(PRAC.level);
+ PRAC.n=PRAC.orig.n; PRAC.d=PRAC.orig.d;
+ PRAC.stepFirst=true; PRAC.qClean=true; PRAC.hint=0; PRAC.steps=0; PRAC.finished=false;
+ el("prac-hintbox").className="hintbox"; el("prac-hintbox").textContent="";
+ el("prac-feedback").textContent=""; el("prac-feedback").className="feedback";
+ renderPractice();
+}
+function renderPractice(){
+ el("prac-progress").textContent=(PRAC.idx+1)+" / "+PRAC.total+" 問";
+ el("prac-combo").textContent="🔥 コンボ "+PRAC.combo;
+ el("prac-orig").outerHTML='<span class="frac" id="prac-orig">'+fracHTML(PRAC.orig.n,PRAC.orig.d).replace(/^<span class="frac">/,"").replace(/<\/span>$/,"")+"</span>";
+ el("prac-arrow").style.display=(PRAC.n!==PRAC.orig.n||PRAC.d!==PRAC.orig.d)?"":"none";
+ var cur=el("prac-cur");
+ if(PRAC.n!==PRAC.orig.n||PRAC.d!==PRAC.orig.d){
+  cur.style.display=""; cur.innerHTML=fracHTML(PRAC.n,PRAC.d).replace(/^<span class="frac">/,"").replace(/<\/span>$/,"");
+ } else cur.style.display="none";
+ for(var i=0;i<pracDivBtns.length;i++) pracDivBtns[i].btn.classList.remove("glow");
+}
+function pracFeedback(msg,cls){ var f=el("prac-feedback"); f.textContent=msg; f.className="feedback "+(cls||""); }
+function pracDivide(div,btn){
+ if(!PRAC.active||PRAC.finished) return;
+ var g=gcd(PRAC.n,PRAC.d);
+ var divides=(PRAC.n%div===0&&PRAC.d%div===0);
+ if(PRAC.stepFirst){
+  if(divides) recordDivisor(div,true);
+  else if(g>1) recordDivisor(div,false);
+  saveData();
+ }
+ if(!divides){
+  PRAC.qClean=false; PRAC.stepFirst=false;
+  btn.classList.remove("shake"); void btn.offsetWidth; btn.classList.add("shake");
+  pracFeedback(div+" では 割り切れないよ。別の数を 探してね。","bad");
+  el("kinako-practice").textContent="大丈夫、ゆっくりでいいわ。分子と分母の 両方が 割り切れる数が コツよ。";
+  return;
+ }
+ var wasGCD=(div===g);
+ PRAC.n/=div; PRAC.d/=div; PRAC.steps++;
+ PRAC.stepFirst=true;
+ if(wasGCD&&PRAC.steps===1&&gcd(PRAC.n,PRAC.d)===1){
+  pracFeedback("🎉 すごい！一発で 最大公約数 "+div+" で 割れたよ！ボーナス気分！","bonus");
+ } else {
+  pracFeedback(div+" で 割れた！ "+PRAC.n+"／"+PRAC.d+" になったよ。","good");
+ }
+ el("kinako-practice").textContent="いい調子！ まだ 割れるか、確かめてね。";
+ renderPractice();
+}
+el("prac-done").addEventListener("click",function(){
+ if(!PRAC.active||PRAC.finished) return;
+ var g=gcd(PRAC.n,PRAC.d);
+ if(g>1){
+  if(PRAC.stepFirst && PRAC.steps===0) recordDivisor(g,false);
+  PRAC.qClean=false; PRAC.stepFirst=false; saveData();
+  pracFeedback("まだ 割れるよ。何で 割れるか 考えてみてね。","bad");
+  el("kinako-practice").textContent="惜しい！ まだ 小さくできるわ。ヒントを 見ても いいのよ。";
+  return;
+ }
+ PRAC.finished=true;
+ recordQuestion(PRAC.qClean);
+ if(PRAC.qClean){ PRAC.combo++; } else { PRAC.combo=0; }
+ var msg = PRAC.orig.irreducible
+   ? "⭕ 正解！ この分数は 最初から もう 約分できなかったね。見切る力も 大事！"
+   : "⭕ 正解！ 約分おわり。答えは "+PRAC.n+"／"+PRAC.d+" だよ。";
+ pracFeedback(msg,"good");
+ el("kinako-practice").textContent=PRAC.qClean?"よくできました！ その調子よ。":"正解！ 間違えながら 覚えるのが 一番の 近道よ。";
+ renderPractice();
+ var bonus=(PRAC.combo>=3&&el("scr-practice").classList.contains("on"))?0.05:0;
+ setTimeout(function(){
+  tryDrop(bonus);
+  PRAC.idx++;
+  if(PRAC.idx>=PRAC.total){
+   PRAC.active=false;
+   showPop('<div class="ptitle">れんしゅう おわり！</div><div class="ptext">'+PRAC.total+'問 れんしゅうしたよ。おつかれさま！</div><button class="bigbtn" style="margin-top:14px;" onclick="closePop();show(\'scr-yakubun\')">約分メニューへ</button>');
+  } else nextPracticeQ();
+ },900);
+});
+el("prac-hint").addEventListener("click",function(){
+ if(!PRAC.active||PRAC.finished) return;
+ PRAC.hint++;
+ var n=PRAC.n,d=PRAC.d,g=gcd(n,d),box=el("prac-hintbox"),text="";
+ if(g===1){
+  text="💡 この分数は もう 割れないかも？ 2〜9の どれでも 両方は 割り切れないはず。確かめたら「もう割れない」を 押してね。";
+ } else if(PRAC.hint===1){
+  if(n%2===0&&d%2===0) text="💡 ヒント1：分子も分母も 偶数（2で割れる数）かな？ 一の位を 見てみて。";
+  else if((n%3===0&&d%3===0)) text="💡 ヒント1：3の倍数かも？ 次のヒントで 見分け方を 教えるね。";
+  else if(n%5===0&&d%5===0) text="💡 ヒント1：一の位が 0か5の数だね。何で 割れそう？";
+  else text="💡 ヒント1：まず 2で 割れるか（一の位が偶数か）を 確かめてみて。";
+ } else if(PRAC.hint===2){
+  var sn=String(n).split("").reduce(function(a,c){return a+ +c;},0), sd=String(d).split("").reduce(function(a,c){return a+ +c;},0);
+  if(n%3===0&&d%3===0) text="💡 ヒント2：3の倍数は「各位の和が 3の倍数」。分子は "+sn+"、分母は "+sd+"。どちらも 3で 割れるね。";
+  else if(n%5===0&&d%5===0) text="💡 ヒント2：一の位が 0か5なら 5の倍数。分子も分母も そうなってるね。";
+  else if(n%2===0&&d%2===0) text="💡 ヒント2：偶数は 2の倍数。分子も分母も 偶数だね。";
+  else text="💡 ヒント2：9の倍数は「各位の和が 9の倍数」。7は 素数だから、両方 7で 割れるかも 確かめてみて。";
+ } else {
+  var small=0; for(var dv=2;dv<=9;dv++){ if(n%dv===0&&d%dv===0){ small=dv; break; } }
+  text="💡 ヒント3：分子と分母、両方 "+small+" で 割れるよ。"+small+" の ボタンを 押してみて。";
+ }
+ box.textContent=text; box.className="hintbox on";
+});
+
+/* ================= チャレンジ ================= */
+var CH={active:false,idx:0,total:10,q:null,clean:true,combo:0,bestCombo:0,firstOk:0,startT:0,timer:null,elapsed:0};
+function stopChallengeTimer(){ if(CH.timer){ clearInterval(CH.timer); CH.timer=null; } }
+el("go-challenge").addEventListener("click",function(){
+ CH={active:true,idx:0,total:10,q:null,clean:true,combo:0,bestCombo:0,firstOk:0,startT:Date.now(),timer:null,elapsed:0};
+ show("scr-challenge");
+ stopChallengeTimer();
+ CH.timer=setInterval(function(){ CH.elapsed=(Date.now()-CH.startT)/1000; el("ch-time").textContent=CH.elapsed.toFixed(1); },100);
+ nextChallengeQ();
+});
+function nextChallengeQ(){
+ CH.q=genFraction(pick([1,2,2,3]));
+ CH.clean=true;
+ resetPad("ch");
+ el("ch-q").innerHTML=fracHTML(CH.q.n,CH.q.d).replace(/^<span class="frac">/,"").replace(/<\/span>$/,"");
+ el("ch-progress").textContent=(CH.idx+1)+" / "+CH.total+" 問";
+ el("ch-combo").textContent="🔥 コンボ "+CH.combo;
+ el("ch-feedback").textContent=""; el("ch-feedback").className="feedback";
+}
+el("ch-submit").addEventListener("click",function(){
+ if(!CH.active) return;
+ var st=PADS.ch;
+ if(st.num===""||st.den===""){ el("ch-feedback").textContent="分子と分母の 両方を 入力してね。"; el("ch-feedback").className="feedback bad"; return; }
+ var g=gcd(CH.q.n,CH.q.d), an=CH.q.n/g, ad=CH.q.d/g;
+ if(parseInt(st.num,10)===an&&parseInt(st.den,10)===ad){
+  recordQuestion(CH.clean);
+  if(CH.clean){ CH.firstOk++; CH.combo++; CH.bestCombo=Math.max(CH.bestCombo,CH.combo); }
+  el("ch-feedback").textContent="⭕ 正解！ "+an+"／"+ad; el("ch-feedback").className="feedback good";
+  CH.idx++;
+  setTimeout(function(){
+   tryDrop(CH.combo>=3?0.05:0);
+   if(CH.idx>=CH.total) finishChallenge(); else nextChallengeQ();
+  },650);
+ } else {
+  if(CH.clean){ recordDivisor(g>1?g:2,false); }
+  CH.clean=false; CH.combo=0;
+  el("ch-combo").textContent="🔥 コンボ 0";
+  el("ch-feedback").textContent="ちがうよ。もう一度 考えてみてね。"; el("ch-feedback").className="feedback bad";
+  saveData();
+ }
+});
+function finishChallenge(){
+ CH.active=false; stopChallengeTimer();
+ var t=CH.elapsed;
+ var isBest=false;
+ if(!data.challengeBest||CH.firstOk>data.challengeBest.score||(CH.firstOk===data.challengeBest.score&&t<data.challengeBest.time)){
+  data.challengeBest={score:CH.firstOk,time:Math.round(t*10)/10}; isBest=true;
+ }
+ saveData();
+ showPop('<div class="ptitle">チャレンジ 終了！</div>'+
+  '<div class="ptext">一発正解：'+CH.firstOk+' / '+CH.total+' 問<br>タイム：'+t.toFixed(1)+' 秒<br>最大コンボ：'+CH.bestCombo+(isBest?'<br>🎉 ベスト記録 更新！':"")+'</div>'+dropQueueHTML()+
+  '<button class="bigbtn" style="margin-top:14px;" onclick="closePop();show(\'scr-yakubun\')">約分メニューへ</button>');
+ el("kinako-challenge").textContent="おつかれさま！ 記録は「きろく」で 見られるわ。";
+}
+
+/* ================= ぼうけん ================= */
+var EFFECTS=[
+ {id:"flame", icon:"🔥", name:"コンボの炎", desc:"コンボが 3以上だと、ドロップの レア度が 上がりやすくなる。"},
+ {id:"guard", icon:"🛡", name:"まちがいガード", desc:"ミスを 1回 無効化する ガードを +2 もらう（最大3まで）。"},
+ {id:"sensor", icon:"📡", name:"公約数センサー", desc:"割れる数が 1つだけ うっすら 光る。答えそのものは 教えないよ。"},
+ {id:"sand", icon:"⏳", name:"時の砂", desc:"問題の 時間制限が なくなる。ゆっくり 考えられる。"},
+ {id:"digger", icon:"⛏", name:"発掘上手", desc:"アイテムが ドロップした時、40%で もう1個 引ける。"},
+ {id:"heart", icon:"❤", name:"ハート回復", desc:"ハートを 1つ 回復する（最大5）。"},
+ {id:"star", icon:"⭐", name:"星の加護", desc:"ミスしても コンボが 切れなくなる。"},
+ {id:"lucky", icon:"🍀", name:"幸運の粉", desc:"ドロップの レア度が 少し 上がりやすくなる。"}
+];
+var ADV={active:false,stage:1,qIdx:0,qPerStage:3,q:null,clean:true,combo:0,hearts:3,maxHearts:5,guards:0,effects:[],boss:null,bossHP:0,timer:null,timeLeft:0,isBoss:false,correctThisRun:0};
+function stopAdvTimer(){ if(ADV.timer){ clearInterval(ADV.timer); ADV.timer=null; } }
+el("go-adventure").addEventListener("click",function(){
+ ADV={active:true,stage:1,qIdx:0,qPerStage:3,q:null,clean:true,combo:0,hearts:3,maxHearts:5,guards:0,effects:[],boss:BOSSES[data.bossSeen%BOSSES.length],bossHP:5,timer:null,timeLeft:0,isBoss:false,correctThisRun:0};
+ data.advRuns++; saveData();
+ show("scr-adv");
+ el("kinako-adv").textContent=ADV.boss.name+" が 奥で 待っているみたい。8ステージ 進んで ボスに 会いに 行きましょう。";
+ nextAdvQ();
+});
+el("adv-quit").addEventListener("click",function(){
+ if(!ADV.active){ show("scr-yakubun"); return; }
+ ADV.active=false; stopAdvTimer();
+ showPop('<div class="ptitle">冒険を やめる？</div><div class="ptext">ここまで 手に入れた アイテムは 持ち帰れるよ。</div>'+
+ '<button class="bigbtn" style="margin-top:12px;" onclick="closePop();show(\'scr-yakubun\')">持ち帰る</button>'+
+ '<button class="bigbtn ghost" onclick="resumeAdv()">冒険を つづける</button>');
+});
+function resumeAdv(){
+ closePop();
+ ADV.active=true;
+ startAdvTimer();
+}
+function advLevel(){ if(ADV.isBoss) return 3; if(ADV.stage<=3) return 1; if(ADV.stage<=6) return 2; return 3; }
+function renderAdvMap(){
+ var html="";
+ for(var s=1;s<=8;s++){
+  if(s>1) html+='<div class="advline"></div>';
+  var cls="advnode"+(s<ADV.stage||ADV.isBoss?" done":"")+(s===ADV.stage&&!ADV.isBoss?" now":"");
+  html+='<div class="'+cls+'">'+(s<ADV.stage||ADV.isBoss?"✓":s)+"</div>";
+ }
+ html+='<div class="advline"></div><div class="advnode boss'+(ADV.isBoss?" now":"")+'">👹</div>';
+ el("adv-map").innerHTML=html;
+}
+function renderAdvStatus(){
+ var h=""; for(var i=0;i<ADV.maxHearts;i++){ h+= i<ADV.hearts?"❤":"🖤"; }
+ el("adv-hearts").textContent=h;
+ el("adv-progress").textContent=ADV.isBoss?("ボス戦 "+(ADV.qIdx+1)+" / 5 問"):("ステージ "+ADV.stage+" ・ "+(ADV.qIdx+1)+" / "+ADV.qPerStage+" 問");
+ el("adv-combo").textContent="🔥 コンボ "+ADV.combo;
+ var g=el("adv-guard");
+ if(ADV.guards>0){ g.style.display=""; g.textContent="🛡 ガード "+ADV.guards; } else g.style.display="none";
+ var fx=el("adv-effects"); var html="";
+ for(var j=0;j<ADV.effects.length;j++){
+  var e=EFFECTS.filter(function(x){return x.id===ADV.effects[j];})[0];
+  if(e) html+='<span class="effectchip">'+e.icon+" "+e.name+"</span>";
+ }
+ fx.innerHTML=html;
+ var bb=el("adv-bossbox");
+ if(ADV.isBoss){
+  bb.style.display="";
+  el("adv-boss-svg").innerHTML=bossSVG(ADV.boss,110);
+  el("adv-boss-name").textContent="ボス："+ADV.boss.name+"（"+ADV.boss.sub+"）";
+  var hp=""; for(var k=0;k<5;k++) hp+='<i class="'+(k<ADV.bossHP?"":"off")+'"></i>';
+  el("adv-boss-hp").innerHTML=hp;
+ } else bb.style.display="none";
+ renderAdvMap();
+}
+function renderSensor(){
+ var box=el("adv-sensor");
+ if(ADV.effects.indexOf("sensor")<0||!ADV.q){ box.style.display="none"; return; }
+ var g=gcd(ADV.q.n,ADV.q.d), html='<div style="font-size:12px;font-weight:800;color:var(--ink-soft);">📡 センサー反応…</div><div style="display:flex;gap:5px;justify-content:center;margin-top:4px;">';
+ for(var d=2;d<=9;d++){
+  var glow=g>1&&(ADV.q.n%d===0&&ADV.q.d%d===0);
+  var first=false;
+  if(glow){ for(var dd=2;dd<d;dd++){ if(ADV.q.n%dd===0&&ADV.q.d%dd===0){ glow=false; break; } } }
+  html+='<span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;font-weight:800;font-size:15px;border:2px solid var(--line);background:var(--card);'+(glow?"border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,183,3,.45);":"opacity:.55;")+'">'+d+"</span>";
+ }
+ box.innerHTML=html+"</div>";
+ box.style.display="";
+}
+function startAdvTimer(){
+ stopAdvTimer();
+ var wrap=el("adv-timerwrap");
+ if(ADV.effects.indexOf("sand")>=0||!ADV.active){ wrap.style.display="none"; return; }
+ wrap.style.display="";
+ ADV.timeLeft=40;
+ el("adv-timer").style.width="100%"; el("adv-timer").className="";
+ ADV.timer=setInterval(function(){
+  ADV.timeLeft-=0.1;
+  var pct=Math.max(0,ADV.timeLeft/40*100);
+  var bar=el("adv-timer"); bar.style.width=pct+"%"; bar.className=ADV.timeLeft<10?"low":"";
+  if(ADV.timeLeft<=0){ stopAdvTimer(); advMiss("⏰ 時間切れ！"); }
+ },100);
+}
+function nextAdvQ(){
+ ADV.q=genFraction(advLevel());
+ ADV.clean=true;
+ resetPad("adv");
+ el("adv-q").innerHTML=fracHTML(ADV.q.n,ADV.q.d).replace(/^<span class="frac">/,"").replace(/<\/span>$/,"");
+ el("adv-stage-label").textContent=ADV.isBoss?("ボス戦！ あと "+ADV.bossHP+" 問 正解で 倒せるよ"):("ステージ "+ADV.stage+" の 問題");
+ el("adv-feedback").textContent=""; el("adv-feedback").className="feedback";
+ renderAdvStatus(); renderSensor(); startAdvTimer();
+}
+function advMiss(msg){
+ if(!ADV.active) return;
+ stopAdvTimer();
+ if(ADV.guards>0){
+  ADV.guards--;
+  el("adv-feedback").textContent="🛡 まちがいガードが 守ってくれた！ ハートは 減らないよ。";
+  el("adv-feedback").className="feedback good";
+  renderAdvStatus();
+  setTimeout(nextAdvQ,1100);
+  return;
+ }
+ ADV.hearts--;
+ if(ADV.effects.indexOf("star")<0) ADV.combo=0;
+ el("adv-feedback").textContent=msg+" ハートが 減ったよ…";
+ el("adv-feedback").className="feedback bad";
+ el("kinako-adv").textContent="ドンマイ！ ハートは あと "+ADV.hearts+" つ。落ち着いて 考えて。";
+ renderAdvStatus();
+ if(ADV.hearts<=0){ setTimeout(function(){ finishAdventure(false); },1200); return; }
+ setTimeout(nextAdvQ,1200);
+}
+el("adv-submit").addEventListener("click",function(){
+ if(!ADV.active) return;
+ var st=PADS.adv;
+ if(st.num===""||st.den===""){ el("adv-feedback").textContent="分子と分母の 両方を 入力してね。"; el("adv-feedback").className="feedback bad"; return; }
+ var g=gcd(ADV.q.n,ADV.q.d), an=ADV.q.n/g, ad=ADV.q.d/g;
+ if(parseInt(st.num,10)===an&&parseInt(st.den,10)===ad){
+  stopAdvTimer();
+  recordQuestion(ADV.clean);
+  if(ADV.clean){ ADV.combo++; ADV.correctThisRun++; }
+  el("adv-feedback").textContent="⭕ 正解！ "+an+"／"+ad; el("adv-feedback").className="feedback good";
+  var bonus=0;
+  if(ADV.effects.indexOf("flame")>=0) bonus+=Math.min(ADV.combo,10)*0.02;
+  if(ADV.effects.indexOf("lucky")>=0) bonus+=0.10;
+  if(ADV.isBoss){
+   ADV.bossHP--;
+   renderAdvStatus();
+   setTimeout(function(){
+    tryDrop(bonus);
+    if(ADV.bossHP<=0){ bossDefeated(); }
+    else { ADV.qIdx++; nextAdvQ(); }
+   },700);
+  } else {
+   setTimeout(function(){
+    tryDrop(bonus);
+    ADV.qIdx++;
+    if(ADV.qIdx>=ADV.qPerStage){ stageCleared(); }
+    else nextAdvQ();
+   },700);
+  }
+ } else {
+  if(ADV.clean){ recordDivisor(g>1?g:2,false); saveData(); }
+  ADV.clean=false;
+  advMiss("ちがうよ。");
+ }
+});
+function stageCleared(){
+ ADV.qIdx=0;
+ if(DROP_QUEUE.length){
+  var html='<div class="ptitle">🎁 アイテム ゲット！</div>'+dropQueueHTML()+'<button class="bigbtn" style="margin-top:14px;" onclick="closePop();proceedStage()">つぎへ</button>';
+  showPop(html);
+ } else proceedStage();
+}
+function proceedStage(){
+ if(ADV.stage>=8){ startBoss(); return; }
+ ADV.stage++;
+ showEffectChoice();
+}
+function startBoss(){
+ ADV.isBoss=true; ADV.qIdx=0; ADV.bossHP=5;
+ el("kinako-adv").textContent="ボス "+ADV.boss.name+" が あらわれた！ 5問 正解で 倒せるわ。ごまも 応援してる！";
+ nextAdvQ();
+}
+function showEffectChoice(){
+ show("scr-effect");
+ var pool=shuffle(EFFECTS.slice());
+ var choices=pool.slice(0,3);
+ var grid=el("fx-grid"); grid.innerHTML="";
+ choices.forEach(function(e){
+  var b=document.createElement("button");
+  b.className="fxcard";
+  b.innerHTML='<div class="fxi">'+e.icon+'</div><div class="fxt">'+esc(e.name)+'</div><div class="fxd">'+esc(e.desc)+'</div>';
+  b.addEventListener("click",function(){ applyEffect(e); });
+  grid.appendChild(b);
+ });
+}
+function applyEffect(e){
+ if(e.id==="guard"){ ADV.guards=Math.min(3,ADV.guards+2); }
+ else if(e.id==="heart"){ ADV.hearts=Math.min(ADV.maxHearts,ADV.hearts+1); }
+ else { if(ADV.effects.indexOf(e.id)<0) ADV.effects.push(e.id); }
+ el("kinako-adv").textContent="「"+e.name+"」を 手に入れた！ 次のステージへ 進みましょう。";
+ show("scr-adv");
+ nextAdvQ();
+}
+function bossDefeated(){
+ ADV.active=false; stopAdvTimer();
+ data.bossDefeated[ADV.boss.id]=(data.bossDefeated[ADV.boss.id]||0)+1;
+ data.bossSeen++; data.advClears++;
+ saveData();
+ confetti(true);
+ showPop('<div class="psvg">'+bossSVG(ADV.boss,110)+'</div>'+
+  '<div class="ptitle">🎉 '+esc(ADV.boss.name)+' を 倒した！</div>'+
+  '<div class="ptext">ボスずかんに 記録されたよ。正解 '+ADV.correctThisRun+' 問の 大冒険だったね！<br>ごほうびに 特別ドロップ！</div>'+dropQueueHTML()+
+  '<button class="bigbtn" style="margin-top:14px;" onclick="closePop();show(\'scr-yakubun\')">約分メニューへ</button>',true);
+ setTimeout(function(){ var it=drawItem(); if(it.r<3){ var pool=ITEMS.filter(function(x){return x.r>=3;}); it=pick(pool); } grantItem(it,false); },500);
+ el("kinako-adv").textContent="やったわね！ 次の冒険では 新しいボスが 待っているわよ。";
+}
+function finishAdventure(cleared){
+ if(!ADV.active&&cleared!==false) return;
+ ADV.active=false; stopAdvTimer();
+ showPop('<div class="ptitle">💔 ハートが なくなった…</div>'+
+  '<div class="ptext">ステージ '+ADV.stage+' まで 進んだよ。手に入れた アイテムは 全部 持ち帰れたから、図鑑で 見てね。</div>'+dropQueueHTML()+
+  '<button class="bigbtn" style="margin-top:14px;" onclick="closePop();show(\'scr-yakubun\')">約分メニューへ</button>');
+ el("kinako-adv").textContent="おつかれさま。アイテムは 持ち帰れたわ。また 挑戦してね。";
+}
+
+/* ================= アイテムずかん ================= */
+function renderZukan(){
+ var owned=0,i,it,st;
+ for(i=0;i<ITEMS.length;i++) if(data.items[ITEMS[i].id]) owned++;
+ var kinds=0; for(i=0;i<ITEMS.length;i++) if(data.items[ITEMS[i].id]) kinds++;
+ el("zukan-progress").textContent="集めた アイテム："+kinds+" / "+ITEMS.length+" 種類";
+ var grid=el("zukan-grid"); grid.innerHTML="";
+ ITEMS.forEach(function(item){
+  st=data.items[item.id];
+  var cell=document.createElement("div");
+  cell.className="zcell"+(st?"":" unowned");
+  var countHtml="";
+  if(st){ countHtml=item.w?("+"+st.plus+" 強化"):(st.count+" 個"); }
+  cell.innerHTML='<div class="zsvg">'+itemSVG(item,52)+'</div>'+
+   '<div class="zname">'+(st?esc(item.name):"？？？")+'</div>'+
+   '<div class="zstars">'+stars(item.r)+'</div>'+
+   '<div class="zcount">'+countHtml+'</div>';
+  var heart=document.createElement("button");
+  var wished=data.wishlist.indexOf(item.id)>=0;
+  heart.className="heart"+(wished?" on":"");
+  heart.textContent=wished?"❤":"♡";
+  heart.setAttribute("aria-label","ほしいもの登録");
+  heart.addEventListener("click",function(ev){
+   ev.stopPropagation();
+   var ix=data.wishlist.indexOf(item.id);
+   if(ix>=0) data.wishlist.splice(ix,1); else data.wishlist.push(item.id);
+   saveData(); renderZukan();
+  });
+  cell.appendChild(heart);
+  grid.appendChild(cell);
+ });
+ var wr=el("wishrow");
+ if(data.wishlist.length===0){ wr.innerHTML='<span style="font-size:13px;font-weight:700;color:var(--ink-soft);">まだ ないよ。ずかんで ❤ を つけてね。</span>'; }
+ else{
+  wr.innerHTML="";
+  data.wishlist.forEach(function(id){
+   var item=itemById(id); if(!item) return;
+   var st2=data.items[id];
+   var d=document.createElement("div");
+   d.className="wishitem"+(st2?"":" unowned");
+   d.innerHTML='<span class="zsvg">'+itemSVG(item,26)+'</span>'+(st2?esc(item.name):"？？？")+' <span style="color:var(--gold);">'+stars(item.r)+"</span>"+(st2?(item.w?(" +"+st2.plus):(" ×"+st2.count)):"");
+   wr.appendChild(d);
+  });
+ }
+}
+
+/* ================= ボスずかん ================= */
+function renderBossZukan(){
+ var grid=el("boss-grid"); grid.innerHTML="";
+ BOSSES.forEach(function(b){
+  var cnt=data.bossDefeated[b.id]||0;
+  var d=document.createElement("div");
+  d.className="bosscell"+(cnt>0?"":" unmet");
+  d.innerHTML='<div class="bsvg">'+bossSVG(b,96)+'</div>'+
+   '<div class="bname">'+(cnt>0?esc(b.name):"？？？")+'</div>'+
+   '<div class="bsub">'+(cnt>0?esc(b.sub)+" ・ 倒した回数 "+cnt+" 回":"まだ 会っていない")+'</div>';
+  grid.appendChild(d);
+ });
+}
+
+/* ================= きろく ================= */
+function renderRecords(){
+ el("rec-total").textContent=data.totalQ;
+ el("rec-acc").textContent=data.totalQ>0?Math.round(data.totalFirst/data.totalQ*100)+"%":"—";
+ el("rec-chbest").textContent=data.challengeBest?(data.challengeBest.score+"問 / "+data.challengeBest.time+"秒"):"—";
+ var advTotal=0; for(var k in data.bossDefeated) advTotal+=data.bossDefeated[k];
+ el("rec-adv").textContent=advTotal;
+ var body=el("rec-divbody"); body.innerHTML="";
+ var weak=null,weakAcc=101;
+ for(var d=2;d<=9;d++){
+  var s=data.divisorStats[d];
+  var tr=document.createElement("tr");
+  if(s&&s.try>0){
+   var acc=Math.round(s.ok/s.try*100);
+   if(s.try>=3&&acc<weakAcc){ weakAcc=acc; weak=d; }
+   tr.innerHTML="<td>"+d+"</td><td>"+s.try+"</td><td>"+s.ok+"</td><td>"+acc+"%</td>";
+   if(s.try>=3&&acc<70) tr.className="weak";
+  } else {
+   tr.innerHTML="<td>"+d+"</td><td>0</td><td>—</td><td>—</td>";
+  }
+  body.appendChild(tr);
+ }
+ el("rec-weak").textContent=weak?("💡 苦手な 割る数は「"+weak+"」みたい。れんしゅうで "+weak+" で 割れる問題を たくさん 解いてみよう。"):"データが 集まると、苦手な 割る数が ここに 分かるよ。";
+ el("kinako-records").textContent=weak?("記録を見たわ。「"+weak+"」で 割る問題が 少し 苦手みたい。そこを 練習すると ぐんと 伸びるわよ。"):"記録は 正直がいちばん。たくさん 解くと 苦手が 見えてくるわ。";
+}
+el("rec-export").addEventListener("click",function(){
+ el("rec-text").value=JSON.stringify(data);
+ el("rec-feedback").textContent="書き出したよ。下の「コピーする」で コピーしてね。";
+ el("rec-feedback").className="feedback good";
+});
+el("rec-copy").addEventListener("click",function(){
+ var t=el("rec-text"); t.focus(); t.select();
+ var done=function(){ el("rec-feedback").textContent="コピーしたよ！"; el("rec-feedback").className="feedback good"; };
+ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t.value).then(done,function(){ try{document.execCommand("copy"); done();}catch(e){} }); }
+ else { try{document.execCommand("copy"); done();}catch(e){} }
+});
+el("rec-import").addEventListener("click",function(){
+ var v=el("rec-text").value.trim();
+ if(!v){ el("rec-feedback").textContent="まず 記録データを 貼り付けてね。"; el("rec-feedback").className="feedback bad"; return; }
+ try{
+  var d=JSON.parse(v);
+  if(typeof d!=="object"||d===null||!("totalQ" in d)) throw new Error("bad");
+  var def=defaultData(); for(var k in def) if(d[k]===undefined) d[k]=def[k];
+  data=d; saveData();
+  el("rec-feedback").textContent="読み込んだよ！ 記録が 復活したね。"; el("rec-feedback").className="feedback good";
+  renderRecords();
+ }catch(e){
+  el("rec-feedback").textContent="読み込めなかった… データが 正しいか 確かめてね。"; el("rec-feedback").className="feedback bad";
+ }
+});
+
+/* ================= 初期化 ================= */
+renderHome();
+</script>
+</body>
+</html>
