@@ -436,6 +436,13 @@ h3.sect{font-size:18px;margin:20px 0 10px;font-weight:800;}
 </section>
 
 <!-- ============ 特殊効果 3択 ============ -->
+<section class="screen" id="scr-result">
+ <div style="text-align:center;font-size:26px;font-weight:900;">👑 ラスボス撃破！</div>
+ <div class="kinako"><div class="face">🌸</div><div><span class="who">きなこ</span><p>全ボス撃破、おめでとう！ すごい冒険だったわね。</p></div></div>
+ <div id="result-body"></div>
+ <button class="bigbtn" style="background:var(--gold);box-shadow:0 4px 0 #cc8f00;" onclick="show('scr-records')">🏆 歴代ランキングを 見る</button>
+ <button class="bigbtn" style="background:var(--accent);box-shadow:0 4px 0 #d95f06;" onclick="show('scr-home')">🏠 ホームへ</button>
+</section>
 <section class="screen" id="scr-effect">
   <div class="topbar"><h2>✨ 特殊効果を えらんでね</h2></div>
   <div class="kinako"><div class="face">🌸</div><div><span class="who">きなこ</span><p id="fx-kinako">特殊効果を 1つ 選べるわ。</p></div></div>
@@ -1080,15 +1087,15 @@ function finishChallenge(){
 var EFFECTS=[
  {id:"flame", icon:"🔥", name:"コンボの炎", desc:"コンボが 3以上だと、ドロップの レア度が 上がりやすくなる。重ねるほど 強くなる。"},
  {id:"guard", icon:"🛡", name:"まちがいガード", desc:"ミスを 1回 無効化する ガードを +2 もらう（最大6まで）。"},
- {id:"sensor", icon:"📡", name:"公約数センサー", desc:"割れる数が 1つだけ うっすら 光る。2つ 重ねると 最大公約数が 光る。答えそのものは 教えないよ。"},
+ {id:"sensor", icon:"📡", name:"公約数センサー", desc:"問題ごとに 確率で 最大公約数が 金色に 光る。1つ：まれに／2つ：たまに／3つ：わりと／4つ：必ず"},
  {id:"sand", icon:"⏳", name:"時の砂", desc:"制限時間が +20秒。3つ 重ねると 時間制限が なくなる。"},
  {id:"digger", icon:"⛏", name:"発掘上手", desc:"アイテムが ドロップした時、40%で もう1個 引ける。重ねた数だけ 抽選が 増える。"},
- {id:"heart", icon:"❤", name:"ハート回復", desc:"ハートを 1つ 回復する（最大5）。"},
+ {id:"heart", icon:"❤", name:"ハート回復", desc:"ハートを 1つ 回復する（ストック上限なし）。"},
  {id:"star", icon:"⭐", name:"星の加護", desc:"ミスしても コンボが 切れなくなる。重ねると レア度アップも 強くなる。"},
  {id:"lucky", icon:"🍀", name:"幸運の粉", desc:"ドロップの レア度が 上がりやすくなる。重ねるほど 強くなる。"},
  {id:"magnet", icon:"🧲", name:"アイテム磁石", desc:"ドロップまでの 問題数が 2問 短くなる（最短5問）。重ねて 効く。"},
  {id:"gem", icon:"💎", name:"宝石探し", desc:"ドロップの レア度が 上がりやすくなる。重ねるほど 強くなる。"},
- {id:"bigheart", icon:"💗", name:"大きなハート", desc:"ハートの 最大が +1 されて、1つ 回復する。"},
+ {id:"bigheart", icon:"💗", name:"大きなハート", desc:"ハートが 2つ 回復する（ストック上限なし）。"},
  {id:"goma", icon:"🐾", name:"ごまのお供", desc:"ボスの 必要正解数が 1問 減る（最少3問）。重ねて 効く。"},
  {id:"score", icon:"🏆", name:"得点の実", desc:"スコアが 1.1倍に なる。重ねると 1.21倍、1.33倍…と 増えていく。"},
  {id:"swift", icon:"💨", name:"はやてのブーツ", desc:"制限時間が 15秒 短くなる 代わりに、スコアが 1.15倍に なる。重ねると 1.32倍、1.52倍…と 増えていく。"},
@@ -1096,7 +1103,7 @@ var EFFECTS=[
 ];
 var ADV={active:false,stage:1,qIdx:0,qPerStage:2,q:null,clean:true,combo:0,hearts:3,maxHearts:5,guards:0,effects:[],boss:null,bossHP:0,timer:null,timeLeft:0,isBoss:false,correctThisRun:0,score:0,fxMode:"start",rerolls:2,carryNames:[]};
 function stopAdvTimer(){ if(ADV.timer){ clearInterval(ADV.timer); ADV.timer=null; } }
-el("go-adventure").addEventListener("click",function(){
+el("go-adventure").addEventListener("click",function(){ DROP_QUEUE=[];
  ADV={active:true,stage:1,qIdx:0,qPerStage:2,q:null,clean:true,combo:0,hearts:3,maxHearts:5,guards:0,effects:[],boss:BOSSES[0],bossIdx:0,totalStages:5,qHard:false,bossHP:5,timer:null,timeLeft:0,isBoss:false,correctThisRun:0,fxMode:"start",rerolls:2,score:0,carryNames:[]};
  data.advRuns++;
  var carry=(data.nextRunEffects||[]).slice(); data.nextRunEffects=[]; saveData();
@@ -1153,7 +1160,7 @@ function showEffectsPop(){
  showPop(html);
 }
 function renderAdvStatus(){
- var h=""; for(var i=0;i<ADV.maxHearts;i++){ h+= i<ADV.hearts?"❤":"🖤"; }
+ var h=""; var hn=Math.min(ADV.hearts,10); for(var i=0;i<hn;i++){ h+="❤"; } if(ADV.hearts>10) h+="×"+ADV.hearts;
  el("adv-hearts").textContent=h;
  el("adv-progress").textContent=ADV.isBoss?("ボス戦 "+(ADV.qIdx+1)+" / 5 問"):("ステージ "+ADV.stage+" ・ "+(ADV.qIdx+1)+" / "+ADV.qPerStage+" 問");
  el("adv-combo").textContent="🔥 コンボ "+ADV.combo;
@@ -1185,15 +1192,15 @@ function addScore(base){ ADV.score+=Math.round(base*scoreMult()); }
 function fxCount(id){ var n=0; for(var i=0;i<ADV.effects.length;i++) if(ADV.effects[i]===id) n++; return n; }
 function renderSensor(){
  var box=el("adv-sensor");
- if(ADV.effects.indexOf("sensor")<0||!ADV.q){ box.style.display="none"; return; }
- var g=gcd(ADV.q.n,ADV.q.d), html='<div style="font-size:12px;font-weight:800;color:var(--ink-soft);">📡 センサー反応…"+(fxCount("sensor")>=2?"（最大公約数が 金色に 光るよ）":"")+"</div><div style="display:flex;gap:5px;justify-content:center;margin-top:4px;flex-wrap:wrap;">';
- var sensorLv=fxCount("sensor");
- var maxD=g>9?20:9;
+ var cnt=fxCount("sensor");
+ if(cnt===0||!ADV.q){ box.style.display="none"; return; }
+ var g=gcd(ADV.q.n,ADV.q.d);
+ var words=["","まれに","たまに","わりと","必ず"];
+ var head=ADV.sensorOn?("📡 センサー発動！ 最大公約数が 金色に 光っているよ"):("📡 センサー反応なし…（発動は "+words[Math.min(cnt,4)]+"）");
+ var maxD=g>9?20:9, html='<div style="font-size:12px;font-weight:800;color:var(--ink-soft);">'+head+'</div><div style="display:flex;gap:5px;justify-content:center;margin-top:4px;flex-wrap:wrap;">';
  for(var d=2;d<=maxD;d++){
-  var glow;
-  if(sensorLv>=2){ glow=(d===g&&g>1); }
-  else { glow=g>1&&(ADV.q.n%d===0&&ADV.q.d%d===0); if(glow){ for(var dd=2;dd<d;dd++){ if(ADV.q.n%dd===0&&ADV.q.d%dd===0){ glow=false; break; } } } }
-  html+='<span style="display:inline-flex;align-items:center;justify-content:center;width:'+(maxD>9?28:34)+'px;height:'+(maxD>9?28:34)+'px;border-radius:10px;font-weight:800;font-size:'+(maxD>9?13:15)+'px;border:2px solid var(--line);background:'+(glow&&sensorLv>=2?"#ffd60a":"var(--card)")+';'+(glow?"border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,183,3,.45);":"opacity:.55;")+'">'+d+"</span>";
+  var glow=ADV.sensorOn&&d===g&&g>1;
+  html+='<span style="display:inline-flex;align-items:center;justify-content:center;width:'+(maxD>9?28:34)+'px;height:'+(maxD>9?28:34)+'px;border-radius:10px;font-weight:800;font-size:'+(maxD>9?13:15)+'px;border:2px solid var(--line);background:'+(glow?"#ffd60a":"var(--card)")+';'+(glow?"border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,183,3,.45);":"opacity:.55;")+'">'+d+"</span>";
  }
  box.innerHTML=html+"</div>";
  box.style.display="";
@@ -1217,6 +1224,8 @@ function startAdvTimer(){
 function nextAdvQ(){
  var lv=advLevel();
  ADV.qHard=(lv===4);
+ var sCnt=fxCount("sensor");
+ ADV.sensorOn=sCnt>0&&Math.random()<Math.min(1,0.25*sCnt);
  ADV.q=genFraction(lv);
  ADV.clean=true;
  resetPad("adv");
@@ -1301,10 +1310,7 @@ el("adv-submit").addEventListener("click",function(){
 function stageCleared(){
  addScore(200);
  ADV.qIdx=0;
- if(DROP_QUEUE.length){
-  var html='<div class="ptitle">🎁 アイテム ゲット！</div>'+dropQueueHTML()+'<button class="bigbtn" style="margin-top:14px;" onclick="closePop();proceedStage()">つぎへ</button>';
-  showPop(html);
- } else proceedStage();
+ proceedStage();
 }
 function proceedStage(){
  if(ADV.stage>=(ADV.totalStages||5)){ startBoss(); return; }
@@ -1328,7 +1334,7 @@ function showEffectChoice(mode){
  renderFxChoices();
 }
 function renderFxChoices(){
- var pool=shuffle(EFFECTS.slice());
+ var pool=shuffle(EFFECTS.filter(function(e){ return !(e.id==="sensor"&&fxCount("sensor")>=4); }));
  var choices=pool.slice(0,3);
  var grid=el("fx-grid"); grid.innerHTML="";
  choices.forEach(function(e){
@@ -1347,8 +1353,8 @@ function renderFxChoices(){
 function applyEffectState(e){
  if(e.id==="gamble"){ ADV.hearts=Math.max(1,ADV.hearts-1); ADV.effects.push(e.id); }
  else if(e.id==="guard"){ ADV.guards=Math.min(6,ADV.guards+2); }
- else if(e.id==="heart"){ ADV.hearts=Math.min(ADV.maxHearts,ADV.hearts+1); }
- else if(e.id==="bigheart"){ ADV.maxHearts++; ADV.hearts=Math.min(ADV.maxHearts,ADV.hearts+1); ADV.effects.push(e.id); }
+ else if(e.id==="heart"){ ADV.hearts+=1; }
+ else if(e.id==="bigheart"){ ADV.hearts+=2; ADV.effects.push(e.id); }
  else { ADV.effects.push(e.id); }
 }
 function pickEffect(e){
@@ -1380,22 +1386,38 @@ function bossDefeated(){
  saveData();
  confetti(true);
  var isFinal = ADV.bossIdx>=BOSSES.length-1;
- setTimeout(function(){ var it=drawItem(); if(it.r<3){ var pool=ITEMS.filter(function(x){return x.r>=3;}); it=pick(pool); } grantItem(it,false); },500);
+ if(!isFinal) setTimeout(function(){ var it=drawItem(); if(it.r<3){ var pool=ITEMS.filter(function(x){return x.r>=3;}); it=pick(pool); } grantItem(it,false); },500);
  if(isFinal){
   ADV.active=false;
+  var fit=drawItem(); if(fit.r<3){ var fpool=ITEMS.filter(function(x){return x.r>=3;}); fit=pick(fpool); } grantItem(fit,false);
+  ADV.heartBonus=ADV.hearts*200;
+  addScore(ADV.heartBonus);
   var advBestFlag=saveAdvResult(true);
   data.advClears++; saveData();
-  showPop('<div class="psvg">'+bossSVG(ADV.boss,110)+'</div>'+
-   '<div class="ptitle">👑 ラスボス '+esc(ADV.boss.name)+' を 倒した！</div>'+
-   '<div class="ptext">全ボス 撃破、おめでとう！ 正解 '+ADV.correctThisRun+' 問の 大冒険だったね！<br>🏆 最終スコア：<b>'+ADV.score+' 点</b>'+(advBestFlag?'<br>🎉 歴代ベスト 更新！':"")+'<br>ごほうびに 特別ドロップ！ リザルトは「きろく」に 残したよ。</div>'+dropQueueHTML()+
-   '<button class="bigbtn" style="margin-top:14px;" onclick="closePop();show(\'scr-yakubun\')">約分メニューへ</button>',true);
-  el("kinako-adv").textContent="やったわね！ 全ボス撃破よ。また 挑戦してね。";
+  showResultScreen(advBestFlag);
  } else {
   showPop('<div class="psvg">'+bossSVG(ADV.boss,110)+'</div>'+
    '<div class="ptitle">🎉 '+esc(ADV.boss.name)+' を 倒した！</div>'+
-   '<div class="ptext">ボスずかんに 記録されたよ。冒険は まだまだ 続くわ！<br>🏆 現在のスコア：<b>'+ADV.score+' 点</b><br>ごほうびに 特別ドロップ！<br>さらに 特殊効果を 1つ 選んで、今の冒険に すぐ 重ねられるよ。</div>'+dropQueueHTML()+
+   '<div class="ptext">ボスずかんに 記録されたよ。冒険は まだまだ 続くわ！<br>🏆 現在のスコア：<b>'+ADV.score+' 点</b><br>ごほうびに 特別ドロップ（最後に まとめて お披露目）！<br>さらに 特殊効果を 1つ 選んで、今の冒険に すぐ 重ねられるよ。</div>'+
    '<button class="bigbtn" style="margin-top:14px;" onclick="closePop();bossRewardChoice()">特殊効果を えらんで 次へ</button>',true);
  }
+}
+function showResultScreen(isBest){
+ stopAdvTimer();
+ var fxicons={}; ADV.effects.forEach(function(id){ fxicons[id]=(fxicons[id]||0)+1; });
+ var fxhtml=Object.keys(fxicons).map(function(id){ var e=EFFECTS.filter(function(x){return x.id===id;})[0]; return e?e.icon+"×"+fxicons[id]:""; }).join(" ");
+ el("result-body").innerHTML=
+  '<div class="statcard" style="text-align:left;">'+
+  '<div>🏆 スコア：<b>'+(ADV.score-(ADV.heartBonus||0))+' 点</b></div>'+
+  '<div>❤ 残りハート '+ADV.hearts+' × 200点 = <b>+'+(ADV.heartBonus||0)+' 点</b></div>'+
+  '<div style="font-size:22px;font-weight:900;margin-top:6px;">最終スコア：'+ADV.score+' 点</div>'+
+  (isBest?'<div style="color:var(--accent);font-weight:900;">🎉 歴代ベスト 更新！</div>':"")+
+  '<div style="font-size:13px;margin-top:6px;">正解 '+ADV.correctThisRun+' 問 ・ 全ボス撃破！</div>'+
+  (fxhtml?'<div style="font-size:13px;">取った能力：'+fxhtml+'</div>':"")+
+  '</div>'+
+  '<div style="font-weight:800;margin:12px 0 4px;">🎁 手に入れた アイテム</div>'+
+  (dropQueueHTML()||'<div style="font-size:13px;">今回は お休みだったみたい</div>');
+ show("scr-result");
 }
 function bossRewardChoice(){
  ADV.bossIdx++;
