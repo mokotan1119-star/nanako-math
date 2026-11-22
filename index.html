@@ -339,7 +339,7 @@ h3.sect{font-size:18px;margin:20px 0 10px;font-weight:800;}
   </div>
   <button class="bigbtn" data-practice="4" style="background:#e4572e;box-shadow:0 4px 0 #b03a17;">🔥 ハード<small>公約数 最大20・分子 分母 最大200（ボス戦の 練習）</small></button>
   <button class="bigbtn" id="go-challenge">⏱ チャレンジ（10問）<small>タイマーと コンボつき・最終形を 入力</small></button>
-  <button class="bigbtn" id="go-adventure" style="background:var(--pink);box-shadow:0 4px 0 #d14e7e;">🗺 ぼうけんモード<small>8ステージ＋ボス戦・最初と ボス撃破時に 特殊効果を えらぶ ローグライク</small></button>
+  <button class="bigbtn" id="go-adventure" style="background:var(--pink);box-shadow:0 4px 0 #d14e7e;">🗺 ぼうけんモード<small>全10問＋ボス戦・最初と ボス撃破時に 特殊効果を えらぶ ローグライク</small></button>
   <div class="mate-card">
     <div id="mate-yaku-svg"></div>
     <div class="mate-info">
@@ -1092,10 +1092,10 @@ var EFFECTS=[
  {id:"swift", icon:"💨", name:"はやてのブーツ", desc:"制限時間が 15秒 短くなる 代わりに、スコアが 1.15倍に なる。重ねると 1.32倍、1.52倍…と 増えていく。"},
  {id:"gamble", icon:"🎲", name:"命がけの賭け", desc:"選んだ 瞬間に ハートが 1つ 減る 代わりに、スコアが 1.25倍に なる。重ねると 1.56倍、1.95倍…と 増えていく。"}
 ];
-var ADV={active:false,stage:1,qIdx:0,qPerStage:3,q:null,clean:true,combo:0,hearts:3,maxHearts:5,guards:0,effects:[],boss:null,bossHP:0,timer:null,timeLeft:0,isBoss:false,correctThisRun:0,score:0,fxMode:"start",rerolls:2,carryNames:[]};
+var ADV={active:false,stage:1,qIdx:0,qPerStage:2,q:null,clean:true,combo:0,hearts:3,maxHearts:5,guards:0,effects:[],boss:null,bossHP:0,timer:null,timeLeft:0,isBoss:false,correctThisRun:0,score:0,fxMode:"start",rerolls:2,carryNames:[]};
 function stopAdvTimer(){ if(ADV.timer){ clearInterval(ADV.timer); ADV.timer=null; } }
 el("go-adventure").addEventListener("click",function(){
- ADV={active:true,stage:1,qIdx:0,qPerStage:3,q:null,clean:true,combo:0,hearts:3,maxHearts:5,guards:0,effects:[],boss:BOSSES[data.bossSeen%BOSSES.length],bossHP:5,timer:null,timeLeft:0,isBoss:false,correctThisRun:0,fxMode:"start",rerolls:2,score:0,carryNames:[]};
+ ADV={active:true,stage:1,qIdx:0,qPerStage:2,q:null,clean:true,combo:0,hearts:3,maxHearts:5,guards:0,effects:[],boss:BOSSES[data.bossSeen%BOSSES.length],bossIdx:(data.bossSeen%BOSSES.length),totalStages:5,qHard:false,bossHP:5,timer:null,timeLeft:0,isBoss:false,correctThisRun:0,fxMode:"start",rerolls:2,score:0,carryNames:[]};
  data.advRuns++;
  var carry=(data.nextRunEffects||[]).slice(); data.nextRunEffects=[]; saveData();
  ADV.carryNames=[];
@@ -1117,10 +1117,17 @@ function resumeAdv(){
  ADV.active=true;
  startAdvTimer();
 }
-function advLevel(){ if(ADV.isBoss) return 4; if(ADV.stage<=3) return 1; if(ADV.stage<=6) return 2; return 3; }
+function advLevel(){
+ if(ADV.isBoss){
+  if(ADV.bossIdx>=5) return 4;
+  if(ADV.bossIdx>=3 && ADV.bossHP<=1) return 4;
+  return 3;
+ }
+ if(ADV.stage<=2) return 1; if(ADV.stage<=4) return 2; return 3;
+}
 function renderAdvMap(){
  var html="";
- for(var s=1;s<=8;s++){
+ for(var s=1;s<=(ADV.totalStages||5);s++){
   if(s>1) html+='<div class="advline"></div>';
   var cls="advnode"+(s<ADV.stage||ADV.isBoss?" done":"")+(s===ADV.stage&&!ADV.isBoss?" now":"");
   html+='<div class="'+cls+'">'+(s<ADV.stage||ADV.isBoss?"✓":s)+"</div>";
@@ -1202,17 +1209,35 @@ function startAdvTimer(){
   ADV.timeLeft-=0.1;
   var pct=Math.max(0,ADV.timeLeft/total*100);
   var bar=el("adv-timer"); bar.style.width=pct+"%"; bar.className=ADV.timeLeft<10?"low":"";
-  if(ADV.timeLeft<=0){ stopAdvTimer(); advMiss("⏰ 時間切れ！"); }
+  if(ADV.timeLeft<=0){ stopAdvTimer(); advTimeout(); }
  },100);
 }
 function nextAdvQ(){
- ADV.q=genFraction(advLevel());
+ var lv=advLevel();
+ ADV.qHard=(lv===4);
+ ADV.q=genFraction(lv);
  ADV.clean=true;
  resetPad("adv");
  el("adv-q").innerHTML=fracHTML(ADV.q.n,ADV.q.d).replace(/^<span class="frac">/,"").replace(/<\/span>$/,"");
  el("adv-stage-label").textContent=ADV.isBoss?("ボス戦！ あと "+ADV.bossHP+" 問 正解で 倒せるよ"):("ステージ "+ADV.stage+" の 問題");
  el("adv-feedback").textContent=""; el("adv-feedback").className="feedback";
  renderAdvStatus(); renderSensor(); startAdvTimer();
+}
+function advTimeout(){
+ if(!ADV.active) return;
+ stopAdvTimer();
+ if(ADV.guards>0){
+  ADV.guards--;
+  el("adv-feedback").textContent="⏰ 時間切れ！ でも 🛡 ガードが 守ってくれた。問題は 同じままよ。";
+  el("adv-feedback").className="feedback good";
+  renderAdvStatus(); startAdvTimer();
+  return;
+ }
+ ADV.hearts--;
+ if(ADV.hearts<=0){ renderAdvStatus(); finishAdventure(); return; }
+ el("adv-feedback").textContent="⏰ 時間切れ！ ハートが 減ったけど、問題は 同じまま。落ち着いて 考えてね。";
+ el("adv-feedback").className="feedback bad";
+ renderAdvStatus(); startAdvTimer();
 }
 function advMiss(msg){
  if(!ADV.active) return;
@@ -1243,7 +1268,7 @@ el("adv-submit").addEventListener("click",function(){
   stopAdvTimer();
   recordQuestion(ADV.clean);
   if(ADV.clean){ ADV.combo++; ADV.correctThisRun++; }
-  var pts=100+(ADV.clean?50:0)+Math.min(ADV.combo,20)*10+(advLevel()===4?100:0);
+  var pts=100+(ADV.clean?50:0)+Math.min(ADV.combo,20)*10+(ADV.qHard?100:0);
   addScore(pts);
   el("adv-feedback").textContent="⭕ 正解！ "+an+"／"+ad; el("adv-feedback").className="feedback good";
   var bonus=0;
@@ -1280,15 +1305,16 @@ function stageCleared(){
  } else proceedStage();
 }
 function proceedStage(){
- if(ADV.stage>=8){ startBoss(); return; }
+ if(ADV.stage>=(ADV.totalStages||5)){ startBoss(); return; }
  ADV.stage++;
- el("kinako-adv").textContent=ADV.stage===7?("ステージ 7、終盤よ！ この先の ボス戦では ハード問題（大きな数）が出るから、気を引き締めてね。"):("ステージ "+ADV.stage+" へ 進むわよ。その調子！");
+ el("kinako-adv").textContent=ADV.stage===5?("最終ステージよ！ この先は ボス戦。気を引き締めてね。"):("ステージ "+ADV.stage+" へ 進むわよ。その調子！");
  show("scr-adv");
  nextAdvQ();
 }
 function startBoss(){
  ADV.isBoss=true; ADV.qIdx=0; ADV.bossHP=Math.max(3,5-fxCount("goma"));
- el("kinako-adv").textContent="ボス "+ADV.boss.name+" が あらわれた！ ハード問題（分子・分母 最大200、公約数 最大20）で "+ADV.bossHP+"問 正解すれば 倒せるわ。ごまも 応援してる！";
+ var bossHardNote = ADV.bossIdx>=5 ? "ラスボスは 全問 ハード問題（分子・分母 最大200、公約数 最大20）よ！" : (ADV.bossIdx>=3 ? "最後の 1問だけ ハード問題（大きな数）が 出るわ。" : "問題は 通常の 難しさよ。");
+ el("kinako-adv").textContent="ボス "+ADV.boss.name+" が あらわれた！ "+ADV.bossHP+"問 正解すれば 倒せるわ。"+bossHardNote+" ごまも 応援してる！";
  nextAdvQ();
 }
 function showEffectChoice(mode){
@@ -1331,7 +1357,7 @@ function pickEffect(e){
   return;
  }
  applyEffectState(e);
- el("kinako-adv").textContent="「"+e.name+"」を 手に入れた！ "+ADV.boss.name+" が 奥で 待っているみたい。8ステージ 進んで 会いに 行きましょう。";
+ el("kinako-adv").textContent="「"+e.name+"」を 手に入れた！ "+ADV.boss.name+" が 奥で 待っているみたい。全10問 解いて 会いに 行きましょう。";
  show("scr-adv");
  nextAdvQ();
 }
