@@ -130,6 +130,8 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 
 /* divisor buttons */
 .divgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px;}
+.divgrid.many{grid-template-columns:repeat(5,1fr);gap:7px;}
+.divgrid.many .divbtn{font-size:16px;padding:9px 0;}
 .divbtn{
   border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:16px;
   min-height:64px;font-size:26px;font-weight:800;box-shadow:var(--shadow);
@@ -335,6 +337,7 @@ h3.sect{font-size:18px;margin:20px 0 10px;font-weight:800;}
     <button class="bigbtn teal" data-practice="2">Lv2<small>3・5も まざるよ</small></button>
     <button class="bigbtn teal" data-practice="3">Lv3<small>大きい 公約数に 挑戦</small></button>
   </div>
+  <button class="bigbtn" data-practice="4" style="background:#e4572e;box-shadow:0 4px 0 #b03a17;">🔥 ハード<small>公約数 最大20・分子 分母 最大200（ボス戦の 練習）</small></button>
   <button class="bigbtn" id="go-challenge">⏱ チャレンジ（10問）<small>タイマーと コンボつき・最終形を 入力</small></button>
   <button class="bigbtn" id="go-adventure" style="background:var(--pink);box-shadow:0 4px 0 #d14e7e;">🗺 ぼうけんモード<small>8ステージ＋ボス戦・最初と ボス撃破時に 特殊効果を えらぶ ローグライク</small></button>
   <div class="mate-card">
@@ -892,9 +895,10 @@ document.addEventListener("click",function(e){
 /* ================= れんしゅう ================= */
 var PRAC={active:false,level:1,idx:0,total:5,orig:null,n:0,d:0,stepFirst:true,qClean:true,hint:0,combo:0,steps:0,finished:false};
 var pracDivBtns=[];
-function buildDivBtns(){
+function buildDivBtns(maxD){
  var box=el("prac-divs"); box.innerHTML=""; pracDivBtns=[];
- for(var d=2;d<=9;d++){
+ box.classList.toggle("many",!!maxD&&maxD>9);
+ for(var d=2;d<=(maxD||9);d++){
   (function(div){
    var b=document.createElement("button");
    b.className="divbtn"; b.textContent=div;
@@ -906,7 +910,8 @@ function buildDivBtns(){
 buildDivBtns();
 function startPractice(level){
  PRAC={active:true,level:level,idx:0,total:5,orig:null,n:0,d:0,stepFirst:true,qClean:true,hint:0,combo:0,steps:0,finished:false};
- el("prac-lv").textContent="Lv"+level;
+ buildDivBtns(level===4?20:9);
+ el("prac-lv").textContent=level===4?"🔥 ハード":"Lv"+level;
  show("scr-practice");
  nextPracticeQ();
 }
@@ -995,7 +1000,7 @@ el("prac-hint").addEventListener("click",function(){
  PRAC.hint++;
  var n=PRAC.n,d=PRAC.d,g=gcd(n,d),box=el("prac-hintbox"),text="";
  if(g===1){
-  text="💡 この分数は もう 割れないかも？ 2〜9の どれでも 両方は 割り切れないはず。確かめたら「もう割れない」を 押してね。";
+  text="💡 この分数は もう 割れないかも？ 2〜"+(PRAC.level===4?20:9)+"の どれでも 両方は 割り切れないはず。確かめたら「もう割れない」を 押してね。";
  } else if(PRAC.hint===1){
   if(n%2===0&&d%2===0) text="💡 ヒント1：分子も分母も 偶数（2で割れる数）かな？ 一の位を 見てみて。";
   else if((n%3===0&&d%3===0)) text="💡 ヒント1：3の倍数かも？ 次のヒントで 見分け方を 教えるね。";
@@ -1008,8 +1013,8 @@ el("prac-hint").addEventListener("click",function(){
   else if(n%2===0&&d%2===0) text="💡 ヒント2：偶数は 2の倍数。分子も分母も 偶数だね。";
   else text="💡 ヒント2：9の倍数は「各位の和が 9の倍数」。7は 素数だから、両方 7で 割れるかも 確かめてみて。";
  } else {
-  var small=0; for(var dv=2;dv<=9;dv++){ if(n%dv===0&&d%dv===0){ small=dv; break; } }
-  text="💡 ヒント3：分子と分母、両方 "+small+" で 割れるよ。"+small+" の ボタンを 押してみて。";
+  var small=0; var maxDv=(PRAC.level===4?20:9); for(var dv=2;dv<=maxDv;dv++){ if(n%dv===0&&d%dv===0){ small=dv; break; } }
+  text=small?("💡 ヒント3：分子と分母、両方 "+small+" で 割れるよ。"+small+" の ボタンを 押してみて。"):("💡 ヒント3：大きな 素数で 割れるかも。11以上の ボタンも 一つずつ 確かめてみて。");
  }
  box.textContent=text; box.className="hintbox on";
 });
@@ -1112,7 +1117,7 @@ function resumeAdv(){
  ADV.active=true;
  startAdvTimer();
 }
-function advLevel(){ if(ADV.isBoss) return 4; if(ADV.stage<=3) return 1; if(ADV.stage<=6) return 2; return 4; }
+function advLevel(){ if(ADV.isBoss) return 4; if(ADV.stage<=3) return 1; if(ADV.stage<=6) return 2; return 3; }
 function renderAdvMap(){
  var html="";
  for(var s=1;s<=8;s++){
@@ -1277,13 +1282,13 @@ function stageCleared(){
 function proceedStage(){
  if(ADV.stage>=8){ startBoss(); return; }
  ADV.stage++;
- el("kinako-adv").textContent=ADV.stage===7?("ここからは ハードモード！ 分母も分子も 最大200、公約数は 最大20の 大きな問題が 出るわよ。"):("ステージ "+ADV.stage+" へ 進むわよ。その調子！");
+ el("kinako-adv").textContent=ADV.stage===7?("ステージ 7、終盤よ！ この先の ボス戦では ハード問題（大きな数）が出るから、気を引き締めてね。"):("ステージ "+ADV.stage+" へ 進むわよ。その調子！");
  show("scr-adv");
  nextAdvQ();
 }
 function startBoss(){
  ADV.isBoss=true; ADV.qIdx=0; ADV.bossHP=Math.max(3,5-fxCount("goma"));
- el("kinako-adv").textContent="ボス "+ADV.boss.name+" が あらわれた！ 5問 正解で 倒せるわ。ごまも 応援してる！";
+ el("kinako-adv").textContent="ボス "+ADV.boss.name+" が あらわれた！ ハード問題（分子・分母 最大200、公約数 最大20）で "+ADV.bossHP+"問 正解すれば 倒せるわ。ごまも 応援してる！";
  nextAdvQ();
 }
 function showEffectChoice(mode){
