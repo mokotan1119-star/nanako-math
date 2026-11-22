@@ -1084,8 +1084,8 @@ var EFFECTS=[
  {id:"bigheart", icon:"💗", name:"大きなハート", desc:"ハートの 最大が +1 されて、1つ 回復する。"},
  {id:"goma", icon:"🐾", name:"ごまのお供", desc:"ボスの 必要正解数が 1問 減る（最少3問）。重ねて 効く。"},
  {id:"score", icon:"🏆", name:"得点の実", desc:"スコアが 1.1倍に なる。重ねると 1.21倍、1.33倍…と 増えていく。"},
- {id:"swift", icon:"💨", name:"はやてのブーツ", desc:"制限時間が 15秒 短くなる 代わりに、スコアが 1.3倍に なる。重ねて 効く。"},
- {id:"gamble", icon:"🎲", name:"命がけの賭け", desc:"選んだ 瞬間に ハートが 1つ 減る 代わりに、スコアが 1.5倍に なる。"}
+ {id:"swift", icon:"💨", name:"はやてのブーツ", desc:"制限時間が 15秒 短くなる 代わりに、スコアが 1.15倍に なる。重ねると 1.32倍、1.52倍…と 増えていく。"},
+ {id:"gamble", icon:"🎲", name:"命がけの賭け", desc:"選んだ 瞬間に ハートが 1つ 減る 代わりに、スコアが 1.25倍に なる。重ねると 1.56倍、1.95倍…と 増えていく。"}
 ];
 var ADV={active:false,stage:1,qIdx:0,qPerStage:3,q:null,clean:true,combo:0,hearts:3,maxHearts:5,guards:0,effects:[],boss:null,bossHP:0,timer:null,timeLeft:0,isBoss:false,correctThisRun:0,score:0,fxMode:"start",rerolls:2,carryNames:[]};
 function stopAdvTimer(){ if(ADV.timer){ clearInterval(ADV.timer); ADV.timer=null; } }
@@ -1166,7 +1166,7 @@ function renderAdvStatus(){
  } else bb.style.display="none";
  renderAdvMap();
 }
-function scoreMult(){ return Math.pow(1.1,fxCount("score"))*Math.pow(1.3,fxCount("swift"))*Math.pow(1.5,fxCount("gamble")); }
+function scoreMult(){ return Math.pow(1.1,fxCount("score"))*Math.pow(1.15,fxCount("swift"))*Math.pow(1.25,fxCount("gamble")); }
 function addScore(base){ ADV.score+=Math.round(base*scoreMult()); }
 function fxCount(id){ var n=0; for(var i=0;i<ADV.effects.length;i++) if(ADV.effects[i]===id) n++; return n; }
 function renderSensor(){
